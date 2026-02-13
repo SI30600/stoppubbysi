@@ -21,7 +21,7 @@ export default function RootLayout() {
           name="index"
           options={{
             title: 'Accueil',
-            headerTitle: 'CallGuard',
+            headerTitle: 'StopPubbySi',
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="home" size={size} color={color} />
             ),
