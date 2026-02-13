@@ -210,16 +210,23 @@ export default function SettingsScreen() {
         </View>
 
         {/* About Section */}
-        <View style={styles.aboutSection}>
-          <View style={styles.appIcon}>
-            <Ionicons name="shield-checkmark" size={40} color="#E91E63" />
-          </View>
-          <Text style={styles.appName}>CallGuard</Text>
+        <TouchableOpacity 
+          style={styles.aboutSection}
+          onPress={() => Linking.openURL(WEBSITE_URL)}
+          activeOpacity={0.8}
+        >
+          <Image 
+            source={{ uri: LOGO_URL }} 
+            style={styles.aboutLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.appName}>StopPubbySi</Text>
           <Text style={styles.appVersion}>Version 1.0.0</Text>
           <Text style={styles.appDescription}>
             Protection contre les appels indésirables
           </Text>
-        </View>
+          <Text style={styles.websiteLink}>solutioninformatique.fr</Text>
+        </TouchableOpacity>
 
         {saving && (
           <View style={styles.savingIndicator}>
