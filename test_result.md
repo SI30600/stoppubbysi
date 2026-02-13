@@ -210,6 +210,18 @@ backend:
         agent: "testing"
         comment: "✅ VERIFIED: POST /api/sync-database successfully adds new spam numbers (added 5 new numbers) and returns proper sync response with message, count, and timestamp."
 
+  - task: "Health Check API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: GET /api/health returns proper health status with timestamp. API is responding correctly."
+
 frontend:
   - task: "Home Screen with Statistics"
     implemented: true
