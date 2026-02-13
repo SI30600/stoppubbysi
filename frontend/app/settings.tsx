@@ -363,6 +363,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 8,
   },
+  websiteLink: {
+    fontSize: 12,
+    color: '#E91E63',
+    marginTop: 8,
+    textDecorationLine: 'underline',
+  },
   savingIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
