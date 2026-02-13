@@ -2,62 +2,65 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AuthProvider } from '../contexts/AuthContext';
 
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <Tabs
-        screenOptions={{
-          tabBarActiveTintColor: '#E91E63',
-          tabBarInactiveTintColor: '#666',
-          tabBarStyle: styles.tabBar,
-          tabBarLabelStyle: styles.tabBarLabel,
-          headerStyle: styles.header,
-          headerTitleStyle: styles.headerTitle,
-          headerTintColor: '#fff',
-        }}
-      >
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Accueil',
-            headerTitle: 'StopPubbySi',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="home" size={size} color={color} />
-            ),
+      <AuthProvider>
+        <Tabs
+          screenOptions={{
+            tabBarActiveTintColor: '#E91E63',
+            tabBarInactiveTintColor: '#666',
+            tabBarStyle: styles.tabBar,
+            tabBarLabelStyle: styles.tabBarLabel,
+            headerStyle: styles.header,
+            headerTitleStyle: styles.headerTitle,
+            headerTintColor: '#fff',
           }}
-        />
-        <Tabs.Screen
-          name="blocked"
-          options={{
-            title: 'Bloqués',
-            headerTitle: 'Numéros Bloqués',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="ban" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="history"
-          options={{
-            title: 'Historique',
-            headerTitle: 'Appels Filtrés',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="time" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="settings"
-          options={{
-            title: 'Paramètres',
-            headerTitle: 'Paramètres',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="settings" size={size} color={color} />
-            ),
-          }}
-        />
-      </Tabs>
+        >
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: 'Accueil',
+              headerTitle: 'StopPubbySi',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="home" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="blocked"
+            options={{
+              title: 'Bloqués',
+              headerTitle: 'Numéros Bloqués',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="ban" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="history"
+            options={{
+              title: 'Historique',
+              headerTitle: 'Appels Filtrés',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="time" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="settings"
+            options={{
+              title: 'Paramètres',
+              headerTitle: 'Paramètres',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="settings" size={size} color={color} />
+              ),
+            }}
+          />
+        </Tabs>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
