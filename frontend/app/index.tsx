@@ -398,6 +398,21 @@ const styles = StyleSheet.create({
     height: 100,
     marginBottom: 12,
   },
+  protectionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4CAF5020',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 12,
+    gap: 8,
+  },
+  protectionText: {
+    color: '#4CAF50',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   headerIcon: {
     width: 80,
     height: 80,
