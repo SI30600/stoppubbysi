@@ -331,6 +331,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 32,
     marginTop: 16,
+    backgroundColor: '#1a1a2e',
+    borderRadius: 12,
+  },
+  aboutLogo: {
+    width: 180,
+    height: 100,
+    marginBottom: 12,
   },
   appIcon: {
     width: 80,
