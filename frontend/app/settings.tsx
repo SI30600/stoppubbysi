@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../contexts/AuthContext';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const LOGO_URL = 'https://customer-assets.emergentagent.com/job_call-filter-2/artifacts/9xi9fvo8_logo%20solution%20informatique%20plein%20ecran.png';
@@ -23,16 +24,28 @@ interface Settings {
   block_unknown_numbers: boolean;
   notifications_enabled: boolean;
   auto_block_spam: boolean;
+  signal_spam_enabled: boolean;
+}
+
+interface SignalSpamStatus {
+  enabled: boolean;
+  status: string;
+  message: string;
+  pending_reports: number;
 }
 
 export default function SettingsScreen() {
+  const { user, isAuthenticated, login, logout, isLoading: authLoading } = useAuth();
   const [settings, setSettings] = useState<Settings>({
     block_unknown_numbers: false,
     notifications_enabled: true,
     auto_block_spam: true,
+    signal_spam_enabled: false,
   });
+  const [signalSpamStatus, setSignalSpamStatus] = useState<SignalSpamStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -43,14 +56,28 @@ export default function SettingsScreen() {
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
-    } finally {
-      setLoading(false);
+    }
+  }, []);
+
+  const fetchSignalSpamStatus = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/signal-spam/status`);
+      if (res.ok) {
+        const data = await res.json();
+        setSignalSpamStatus(data);
+      }
+    } catch (error) {
+      console.error('Error fetching Signal Spam status:', error);
     }
   }, []);
 
   useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
+    const loadData = async () => {
+      await Promise.all([fetchSettings(), fetchSignalSpamStatus()]);
+      setLoading(false);
+    };
+    loadData();
+  }, [fetchSettings, fetchSignalSpamStatus]);
 
   const updateSetting = async (key: keyof Settings, value: boolean) => {
     const previousValue = settings[key];
@@ -76,14 +103,34 @@ export default function SettingsScreen() {
     }
   };
 
+  const syncUserData = async () => {
+    if (!isAuthenticated) {
+      Alert.alert('Connexion requise', 'Connectez-vous avec Google pour synchroniser vos données');
+      return;
+    }
+    setSyncing(true);
+    try {
+      const res = await fetch(`${API_URL}/api/sync-user-data`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        Alert.alert('Synchronisation', `Données synchronisées !\n${data.stats.spam_numbers} numéros\n${data.stats.blocked_calls} appels`);
+      }
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de synchroniser');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const openAndroidCallSettings = () => {
     if (Platform.OS === 'android') {
-      // This would open Android call settings in a real app
       Alert.alert(
         'Configuration Android',
         'Pour activer le blocage automatique sur Android:\n\n' +
         '1. Allez dans Paramètres > Applications\n' +
-        '2. Sélectionnez CallGuard\n' +
+        '2. Sélectionnez StopPubbySi\n' +
         '3. Accordez les permissions "Téléphone"\n' +
         '4. Définissez comme app d\'identification d\'appels',
         [{ text: 'Compris' }]
@@ -97,7 +144,22 @@ export default function SettingsScreen() {
     }
   };
 
-  if (loading) {
+  const handleGoogleAuth = async () => {
+    if (isAuthenticated) {
+      Alert.alert(
+        'Déconnexion',
+        'Voulez-vous vous déconnecter ?',
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Déconnexion', style: 'destructive', onPress: logout }
+        ]
+      );
+    } else {
+      await login();
+    }
+  };
+
+  if (loading || authLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#E91E63" />
@@ -108,6 +170,98 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        
+        {/* Google Account Section */}
+        <Text style={styles.sectionTitle}>Compte & Synchronisation</Text>
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.accountItem} onPress={handleGoogleAuth}>
+            <View style={styles.settingInfo}>
+              <View style={[styles.settingIconContainer, { backgroundColor: isAuthenticated ? '#4CAF5020' : '#2196F320' }]}>
+                <Ionicons 
+                  name={isAuthenticated ? 'person-circle' : 'logo-google'} 
+                  size={24} 
+                  color={isAuthenticated ? '#4CAF50' : '#2196F3'} 
+                />
+              </View>
+              <View style={styles.settingText}>
+                {isAuthenticated && user ? (
+                  <>
+                    <Text style={styles.settingTitle}>{user.name}</Text>
+                    <Text style={styles.settingDescription}>{user.email}</Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.settingTitle}>Se connecter avec Google</Text>
+                    <Text style={styles.settingDescription}>Synchronisez vos données entre appareils</Text>
+                  </>
+                )}
+              </View>
+            </View>
+            <Ionicons 
+              name={isAuthenticated ? 'log-out-outline' : 'chevron-forward'} 
+              size={20} 
+              color={isAuthenticated ? '#F44336' : '#666'} 
+            />
+          </TouchableOpacity>
+
+          {isAuthenticated && (
+            <>
+              <View style={styles.divider} />
+              <TouchableOpacity style={styles.actionItem} onPress={syncUserData} disabled={syncing}>
+                <View style={styles.settingInfo}>
+                  <View style={[styles.settingIconContainer, { backgroundColor: '#9C27B020' }]}>
+                    {syncing ? (
+                      <ActivityIndicator size="small" color="#9C27B0" />
+                    ) : (
+                      <Ionicons name="cloud-upload" size={20} color="#9C27B0" />
+                    )}
+                  </View>
+                  <View style={styles.settingText}>
+                    <Text style={styles.settingTitle}>Synchroniser maintenant</Text>
+                    <Text style={styles.settingDescription}>Sauvegarder vos données dans le cloud</Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#666" />
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+
+        {/* Signal Spam Section */}
+        <Text style={styles.sectionTitle}>Signal Spam France</Text>
+        <View style={styles.section}>
+          <View style={styles.signalSpamStatus}>
+            <View style={styles.settingInfo}>
+              <View style={[styles.settingIconContainer, { backgroundColor: '#FF980020' }]}>
+                <Ionicons name="flag" size={20} color="#FF9800" />
+              </View>
+              <View style={styles.settingText}>
+                <Text style={styles.settingTitle}>Intégration Signal Spam</Text>
+                <Text style={styles.settingDescription}>
+                  {signalSpamStatus?.message || 'En attente des accès API'}
+                </Text>
+              </View>
+            </View>
+            <View style={[styles.statusBadge, { backgroundColor: signalSpamStatus?.enabled ? '#4CAF5020' : '#FF980020' }]}>
+              <Text style={[styles.statusText, { color: signalSpamStatus?.enabled ? '#4CAF50' : '#FF9800' }]}>
+                {signalSpamStatus?.enabled ? 'Actif' : 'En attente'}
+              </Text>
+            </View>
+          </View>
+          
+          {signalSpamStatus && signalSpamStatus.pending_reports > 0 && (
+            <>
+              <View style={styles.divider} />
+              <View style={styles.infoItem}>
+                <Ionicons name="time" size={20} color="#888" />
+                <Text style={styles.pendingText}>
+                  {signalSpamStatus.pending_reports} signalement(s) en attente de synchronisation
+                </Text>
+              </View>
+            </>
+          )}
+        </View>
+
         {/* Protection Section */}
         <Text style={styles.sectionTitle}>Protection</Text>
         <View style={styles.section}>
@@ -197,13 +351,28 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Play Store Info */}
+        <Text style={styles.sectionTitle}>Publication Play Store</Text>
+        <View style={styles.section}>
+          <View style={styles.infoItem}>
+            <Ionicons name="storefront" size={24} color="#4CAF50" />
+            <Text style={styles.infoText}>
+              Pour publier sur le Play Store :{'\n'}
+              1. Créez un compte Google Play Developer (25$){'\n'}
+              2. Préparez les captures d'écran et description{'\n'}
+              3. Générez le build APK/AAB signé{'\n'}
+              4. Soumettez l'application pour review
+            </Text>
+          </View>
+        </View>
+
         {/* Info Section */}
         <Text style={styles.sectionTitle}>Information</Text>
         <View style={styles.section}>
           <View style={styles.infoItem}>
             <Ionicons name="information-circle" size={24} color="#2196F3" />
             <Text style={styles.infoText}>
-              CallGuard utilise une base de données de numéros spam connus en France. 
+              StopPubbySi utilise une base de données de numéros spam connus en France. 
               La base est régulièrement mise à jour pour vous protéger des nouveaux numéros de démarchage.
             </Text>
           </View>
@@ -283,6 +452,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
   },
+  accountItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  signalSpamStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
   settingInfo: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -315,6 +496,21 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#2a2a4e',
     marginLeft: 64,
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  pendingText: {
+    flex: 1,
+    color: '#888',
+    fontSize: 13,
+    marginLeft: 12,
   },
   infoItem: {
     flexDirection: 'row',
