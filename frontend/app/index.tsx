@@ -203,6 +203,19 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Download APK Button */}
+        <TouchableOpacity
+          style={styles.downloadButton}
+          onPress={() => Linking.openURL(APK_DOWNLOAD_URL)}
+        >
+          <Ionicons name="download" size={24} color="#fff" />
+          <View style={styles.downloadTextContainer}>
+            <Text style={styles.downloadTitle}>Télécharger l'application Android</Text>
+            <Text style={styles.downloadSubtitle}>Installer l'APK sur votre téléphone</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#fff" />
+        </TouchableOpacity>
+
         {/* Statistics Cards */}
         <Text style={styles.sectionTitle}>Statistiques</Text>
         <View style={styles.statsGrid}>
