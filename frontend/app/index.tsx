@@ -485,6 +485,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  downloadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4CAF50',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    gap: 12,
+  },
+  downloadTextContainer: {
+    flex: 1,
+  },
+  downloadTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  downloadSubtitle: {
+    color: '#ffffffaa',
+    fontSize: 12,
+    marginTop: 2,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
