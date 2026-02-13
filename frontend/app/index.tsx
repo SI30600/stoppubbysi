@@ -417,6 +417,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  spartanHelmet: {
+    width: 28,
+    height: 28,
+    tintColor: '#4CAF50',
+  },
   headerIcon: {
     width: 80,
     height: 80,
