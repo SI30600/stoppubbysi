@@ -413,6 +413,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888',
   },
+  websiteLink: {
+    fontSize: 12,
+    color: '#E91E63',
+    marginTop: 8,
+    textDecorationLine: 'underline',
+  },
   quickActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
