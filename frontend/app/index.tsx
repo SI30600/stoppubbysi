@@ -17,6 +17,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const LOGO_URL = 'https://customer-assets.emergentagent.com/job_call-filter-2/artifacts/9xi9fvo8_logo%20solution%20informatique%20plein%20ecran.png';
+const WEBSITE_URL = 'https://solutioninformatique.fr';
 
 interface Statistics {
   total_blocked_today: number;
