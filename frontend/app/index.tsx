@@ -156,16 +156,23 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#E91E63" />
         }
       >
-        {/* Header Card */}
-        <View style={styles.headerCard}>
-          <View style={styles.headerIcon}>
-            <Ionicons name="shield-checkmark" size={40} color="#E91E63" />
-          </View>
-          <Text style={styles.headerTitle}>Protection Active</Text>
+        {/* Header Card with Logo */}
+        <TouchableOpacity 
+          style={styles.headerCard} 
+          onPress={() => Linking.openURL(WEBSITE_URL)}
+          activeOpacity={0.8}
+        >
+          <Image 
+            source={{ uri: LOGO_URL }} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.headerTitle}>StopPubbySi</Text>
           <Text style={styles.headerSubtitle}>
             {statistics?.total_spam_numbers || 0} numéros dans la base
           </Text>
-        </View>
+          <Text style={styles.websiteLink}>solutioninformatique.fr</Text>
+        </TouchableOpacity>
 
         {/* Quick Actions */}
         <View style={styles.quickActions}>
