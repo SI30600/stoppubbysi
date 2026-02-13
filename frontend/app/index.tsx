@@ -167,6 +167,10 @@ export default function HomeScreen() {
             style={styles.logo}
             resizeMode="contain"
           />
+          <View style={styles.protectionBadge}>
+            <Ionicons name="shield-checkmark" size={24} color="#4CAF50" />
+            <Text style={styles.protectionText}>Protection Active</Text>
+          </View>
           <Text style={styles.headerTitle}>StopPubbySi</Text>
           <Text style={styles.headerSubtitle}>
             {statistics?.total_spam_numbers || 0} numéros dans la base
