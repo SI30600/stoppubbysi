@@ -116,6 +116,9 @@ backend:
       - working: true
         agent: "main"
         comment: "GET /api/categories returns 11 default categories"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: GET /api/categories returns 11 default categories including all expected IDs (commercial, energy, insurance, etc.). POST /api/categories successfully creates custom categories."
 
   - task: "Spam Numbers API - CRUD operations"
     implemented: true
@@ -128,6 +131,9 @@ backend:
       - working: true
         agent: "main"
         comment: "GET/POST/DELETE /api/spam-numbers working"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: All CRUD operations working. GET returns 20+ default spam numbers, filtering by category_id works (tested with CPF), POST adds new numbers, DELETE removes numbers successfully."
 
   - task: "Call History API - CRUD operations"
     implemented: true
@@ -140,6 +146,9 @@ backend:
       - working: true
         agent: "main"
         comment: "GET/POST/DELETE /api/call-history working"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: GET /api/call-history retrieves history, POST /api/call-history logs blocked calls with proper category mapping, DELETE /api/call-history/{id} removes entries successfully."
 
   - task: "Settings API - Get and Update"
     implemented: true
@@ -152,6 +161,9 @@ backend:
       - working: true
         agent: "main"
         comment: "GET/PUT /api/settings working"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: GET /api/settings returns all expected keys (block_unknown_numbers, notifications_enabled, auto_block_spam). PUT /api/settings updates settings correctly."
 
   - task: "Statistics API"
     implemented: true
@@ -164,6 +176,9 @@ backend:
       - working: true
         agent: "main"
         comment: "GET /api/statistics returns correct counts"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: GET /api/statistics returns all expected fields (total_blocked_today/week/month/all, total_spam_numbers, top_categories) with accurate counts."
 
   - task: "Check Number API"
     implemented: true
@@ -176,6 +191,9 @@ backend:
       - working: true
         agent: "main"
         comment: "GET /api/check-number/{phone} returns spam info"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: GET /api/check-number/+33949000000 correctly identifies known CPF spam number with proper response format (is_spam: true, category, reports_count, description)."
 
   - task: "Sync Database API"
     implemented: true
@@ -188,6 +206,9 @@ backend:
       - working: true
         agent: "main"
         comment: "POST /api/sync-database adds new spam numbers"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: POST /api/sync-database successfully adds new spam numbers (added 5 new numbers) and returns proper sync response with message, count, and timestamp."
 
 frontend:
   - task: "Home Screen with Statistics"
