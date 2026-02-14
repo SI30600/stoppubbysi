@@ -30,6 +30,11 @@
     "experiments": {
       "typedRoutes": true
     },
+    "extra": {
+      "eas": {
+        "projectId": "f8e82d59-f79d-421e-ac48-131083433fe2"
+      }
+    },
     "owner": "si30600"
   }
 }
