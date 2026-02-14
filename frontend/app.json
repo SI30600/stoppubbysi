@@ -17,7 +17,12 @@
         "backgroundColor": "#0f0f1e"
       },
       "package": "fr.solutioninformatique.stoppubbysi",
-      "versionCode": 1
+      "versionCode": 1,
+      "softwareKeyboardLayoutMode": "pan"
+    },
+    "androidStatusBar": {
+      "hidden": true,
+      "translucent": true
     },
     "web": {
       "bundler": "metro",
