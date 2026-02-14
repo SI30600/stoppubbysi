@@ -348,12 +348,6 @@ DEFAULT_SPAM_NUMBERS = [
     {"phone_number": "+33133000000", "category_id": "other", "description": "Numéro inconnu", "reports_count": 32},
     {"phone_number": "+33133000001", "category_id": "other", "description": "Appel silencieux", "reports_count": 30},
 ]
-    {"phone_number": "+33899000000", "category_id": "scam", "description": "Numéro frauduleux", "reports_count": 350},
-    {"phone_number": "+33176000000", "category_id": "survey", "description": "Sondage politique", "reports_count": 40},
-    {"phone_number": "+33177000000", "category_id": "survey", "description": "Enquête satisfaction", "reports_count": 35},
-    {"phone_number": "+33178000000", "category_id": "commercial", "description": "Vente à domicile", "reports_count": 60},
-    {"phone_number": "+33179000000", "category_id": "commercial", "description": "Télémarketing", "reports_count": 55},
-]
 
 # ==================== INITIALIZATION ====================
 
