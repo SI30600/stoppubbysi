@@ -47,6 +47,23 @@ export default function SettingsScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [callBlockingEnabled, setCallBlockingEnabled] = useState(false);
+  const [checkingCallBlocker, setCheckingCallBlocker] = useState(false);
+
+  // Check if call blocking is enabled on mount
+  const checkCallBlockerStatus = useCallback(async () => {
+    if (Platform.OS === 'android') {
+      setCheckingCallBlocker(true);
+      try {
+        const isEnabled = await CallBlocker.isCallScreeningServiceEnabled();
+        setCallBlockingEnabled(isEnabled);
+      } catch (error) {
+        console.error('Error checking call blocker status:', error);
+      } finally {
+        setCheckingCallBlocker(false);
+      }
+    }
+  }, []);
 
   const fetchSettings = useCallback(async () => {
     try {
