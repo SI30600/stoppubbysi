@@ -745,6 +745,31 @@ async def clear_call_history(request: Request):
     
     return {"message": "Historique effacé"}
 
+@api_router.post("/reset-spam-database")
+async def reset_spam_database():
+    """Reset and reload all default spam numbers"""
+    # Delete all default spam numbers (keep user-added ones)
+    await db.spam_numbers.delete_many({"source": {"$in": ["database", "sync"]}})
+    
+    # Reload all default spam numbers
+    count = 0
+    for spam in DEFAULT_SPAM_NUMBERS:
+        cat = await db.categories.find_one({"id": spam["category_id"]}, {"_id": 0})
+        cat_name = cat["name"] if cat else "Inconnu"
+        spam_num = SpamNumber(
+            phone_number=spam["phone_number"],
+            category_id=spam["category_id"],
+            category_name=cat_name,
+            description=spam.get("description", ""),
+            reports_count=spam.get("reports_count", 1),
+            source="database",
+            user_id=None
+        )
+        await db.spam_numbers.insert_one(spam_num.dict())
+        count += 1
+    
+    return {"message": f"Base de données réinitialisée avec {count} numéros spam"}
+
 # ==================== SETTINGS ====================
 
 @api_router.get("/settings", response_model=UserSettings)
