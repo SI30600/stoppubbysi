@@ -6,10 +6,9 @@ import android.os.Build
 import android.telecom.Call
 import android.telecom.CallScreeningService
 import android.util.Log
-import androidx.annotation.RequiresApi
 import org.json.JSONArray
+import org.json.JSONObject
 
-@RequiresApi(Build.VERSION_CODES.N)
 class CallBlockerService : CallScreeningService() {
     
     companion object {
@@ -28,7 +27,6 @@ class CallBlockerService : CallScreeningService() {
         val autoBlockEnabled = prefs.getBoolean(AUTO_BLOCK_KEY, true)
         
         if (!autoBlockEnabled) {
-            // Auto-block is disabled, allow all calls
             respondToCall(callDetails, CallResponse.Builder().build())
             return
         }
@@ -37,11 +35,8 @@ class CallBlockerService : CallScreeningService() {
         
         if (shouldBlock) {
             Log.d(TAG, "Blocking call from: $phoneNumber")
-            
-            // Save to blocked history
             saveBlockedCall(phoneNumber)
             
-            // Block the call
             val response = CallResponse.Builder()
                 .setDisallowCall(true)
                 .setRejectCall(true)
@@ -50,16 +45,13 @@ class CallBlockerService : CallScreeningService() {
                 .build()
             respondToCall(callDetails, response)
         } else {
-            // Allow the call
             respondToCall(callDetails, CallResponse.Builder().build())
         }
     }
     
     private fun shouldBlockNumber(phoneNumber: String, prefs: SharedPreferences): Boolean {
-        // Normalize the phone number
         val normalizedNumber = normalizePhoneNumber(phoneNumber)
         
-        // Check if number is in blocked list
         val blockedNumbersJson = prefs.getString(BLOCKED_NUMBERS_KEY, "[]") ?: "[]"
         try {
             val blockedNumbers = JSONArray(blockedNumbersJson)
@@ -72,12 +64,11 @@ class CallBlockerService : CallScreeningService() {
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error parsing blocked numbers: ${e.message}")
+            Log.e(TAG, "Error parsing blocked numbers: " + e.message)
         }
         
-        // Check if blocking unknown numbers is enabled
         val blockUnknown = prefs.getBoolean(BLOCK_UNKNOWN_KEY, false)
-        if (blockUnknown && !isKnownNumber(phoneNumber)) {
+        if (blockUnknown) {
             return true
         }
         
@@ -85,43 +76,30 @@ class CallBlockerService : CallScreeningService() {
     }
     
     private fun normalizePhoneNumber(number: String): String {
-        // Remove all non-digit characters except +
         var normalized = number.replace(Regex("[^0-9+]"), "")
-        
-        // Convert French numbers to international format
         if (normalized.startsWith("0") && normalized.length == 10) {
             normalized = "+33" + normalized.substring(1)
         }
-        
         return normalized
     }
     
-    private fun isKnownNumber(phoneNumber: String): Boolean {
-        // Check if number is in contacts
-        // This is a simplified check - in production, query ContactsContract
-        return false
-    }
-    
     private fun saveBlockedCall(phoneNumber: String) {
-        // Save blocked call to SharedPreferences for later sync
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val historyJson = prefs.getString("blocked_history", "[]") ?: "[]"
         try {
             val history = JSONArray(historyJson)
-            val callInfo = org.json.JSONObject().apply {
-                put("phone_number", phoneNumber)
-                put("blocked_at", System.currentTimeMillis())
-            }
+            val callInfo = JSONObject()
+            callInfo.put("phone_number", phoneNumber)
+            callInfo.put("blocked_at", System.currentTimeMillis())
             history.put(callInfo)
             
-            // Keep only last 100 calls
             while (history.length() > 100) {
                 history.remove(0)
             }
             
             prefs.edit().putString("blocked_history", history.toString()).apply()
         } catch (e: Exception) {
-            Log.e(TAG, "Error saving blocked call: ${e.message}")
+            Log.e(TAG, "Error saving blocked call: " + e.message)
         }
     }
 }
