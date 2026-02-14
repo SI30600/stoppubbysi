@@ -440,6 +440,91 @@ export default function SettingsScreen() {
         {/* Android Configuration */}
         <Text style={styles.sectionTitle}>Configuration système</Text>
         <View style={styles.section}>
+          {/* Background Call Blocking Status */}
+          {Platform.OS === 'android' && (
+            <>
+              <View style={styles.settingItem}>
+                <View style={styles.settingInfo}>
+                  <View style={[styles.settingIconContainer, { backgroundColor: callBlockingEnabled ? '#4CAF5020' : '#E91E6320' }]}>
+                    <Ionicons 
+                      name={callBlockingEnabled ? 'shield-checkmark' : 'shield-outline'} 
+                      size={20} 
+                      color={callBlockingEnabled ? '#4CAF50' : '#E91E63'} 
+                    />
+                  </View>
+                  <View style={styles.settingText}>
+                    <Text style={styles.settingTitle}>Blocage en arrière-plan</Text>
+                    <Text style={styles.settingDescription}>
+                      {callBlockingEnabled 
+                        ? 'Actif - Les appels sont bloqués même app fermée'
+                        : 'Inactif - Activez pour bloquer les appels automatiquement'}
+                    </Text>
+                  </View>
+                </View>
+                {checkingCallBlocker ? (
+                  <ActivityIndicator size="small" color="#E91E63" />
+                ) : (
+                  <View style={[styles.statusBadge, { backgroundColor: callBlockingEnabled ? '#4CAF5020' : '#E91E6320' }]}>
+                    <Text style={[styles.statusText, { color: callBlockingEnabled ? '#4CAF50' : '#E91E63' }]}>
+                      {callBlockingEnabled ? 'Actif' : 'Inactif'}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {!callBlockingEnabled && (
+                <>
+                  <View style={styles.divider} />
+                  <TouchableOpacity 
+                    style={styles.actionItem} 
+                    onPress={activateCallBlocking}
+                    disabled={checkingCallBlocker}
+                  >
+                    <View style={styles.settingInfo}>
+                      <View style={[styles.settingIconContainer, { backgroundColor: '#E91E6320' }]}>
+                        <Ionicons name="power" size={20} color="#E91E63" />
+                      </View>
+                      <View style={styles.settingText}>
+                        <Text style={[styles.settingTitle, { color: '#E91E63' }]}>
+                          Activer le blocage d'appels
+                        </Text>
+                        <Text style={styles.settingDescription}>
+                          Définir StopPubbySi comme app de filtrage
+                        </Text>
+                      </View>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#E91E63" />
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {callBlockingEnabled && (
+                <>
+                  <View style={styles.divider} />
+                  <TouchableOpacity 
+                    style={styles.actionItem} 
+                    onPress={syncSpamNumbersToNative}
+                  >
+                    <View style={styles.settingInfo}>
+                      <View style={[styles.settingIconContainer, { backgroundColor: '#2196F320' }]}>
+                        <Ionicons name="refresh" size={20} color="#2196F3" />
+                      </View>
+                      <View style={styles.settingText}>
+                        <Text style={styles.settingTitle}>Synchroniser la liste de blocage</Text>
+                        <Text style={styles.settingDescription}>
+                          Mettre à jour les numéros spam en local
+                        </Text>
+                      </View>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
+                </>
+              )}
+
+              <View style={styles.divider} />
+            </>
+          )}
+
           <TouchableOpacity style={styles.actionItem} onPress={openAndroidCallSettings}>
             <View style={styles.settingInfo}>
               <View style={[styles.settingIconContainer, { backgroundColor: '#4CAF5020' }]}>
