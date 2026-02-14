@@ -2,12 +2,15 @@ package fr.solutioninformatique.stoppubbysi
 
 import android.app.role.RoleManager
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
-import com.facebook.react.bridge.*
+import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContextBaseJavaModule
+import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.ReadableArray
 import org.json.JSONArray
 
 class CallBlockerModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
@@ -35,7 +38,6 @@ class CallBlockerModule(reactContext: ReactApplicationContext) : ReactContextBas
                 val isHeld = roleManager.isRoleHeld(RoleManager.ROLE_CALL_SCREENING)
                 promise.resolve(isHeld)
             } else {
-                // For older Android versions, we can't use CallScreeningService
                 promise.resolve(false)
             }
         } catch (e: Exception) {
@@ -71,7 +73,7 @@ class CallBlockerModule(reactContext: ReactApplicationContext) : ReactContextBas
                 .putString(BLOCKED_NUMBERS_KEY, jsonArray.toString())
                 .apply()
             
-            Log.d(TAG, "Updated ${numbers.size()} blocked numbers")
+            Log.d(TAG, "Updated " + numbers.size() + " blocked numbers")
             promise.resolve(true)
         } catch (e: Exception) {
             promise.reject("ERROR", e.message)
