@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "stoppubbysi",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "fr.solutioninformatique.stoppubbysi"
@@ -17,14 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0f0f1e"
       },
-      "edgeToEdgeEnabled": true,
       "package": "fr.solutioninformatique.stoppubbysi",
-      "versionCode": 1,
-      "permissions": [
-        "READ_PHONE_STATE",
-        "READ_CALL_LOG",
-        "ANSWER_PHONE_CALLS"
-      ]
+      "versionCode": 1
     },
     "web": {
       "bundler": "metro",
@@ -32,16 +25,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#0f0f1e"
-        }
-      ]
+      "expo-router"
     ],
     "experiments": {
       "typedRoutes": true
