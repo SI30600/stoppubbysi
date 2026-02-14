@@ -2,11 +2,14 @@ package fr.solutioninformatique.stoppubbysi
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
 import android.telecom.Call
 import android.telecom.CallScreeningService
 import android.util.Log
+import androidx.annotation.RequiresApi
 import org.json.JSONArray
 
+@RequiresApi(Build.VERSION_CODES.N)
 class CallBlockerService : CallScreeningService() {
     
     companion object {
