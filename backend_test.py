@@ -11,7 +11,7 @@ from datetime import datetime
 import time
 
 # Backend URL from frontend/.env
-BASE_URL = "https://call-filter-2.preview.emergentagent.com/api"
+BASE_URL = "https://antispam-caller.preview.emergentagent.com/api"
 
 class CallGuardAPITester:
     def __init__(self):
