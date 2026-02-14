@@ -270,6 +270,21 @@ frontend:
       - working: true
         agent: "main"
         comment: "Toggle settings for blocking options and notifications"
+      - working: true
+        agent: "main"
+        comment: "Added native call blocking UI section with activation button"
+
+  - task: "Native Call Blocking Module (Android)"
+    implemented: true
+    working: "NA"
+    file: "modules/CallBlockerModule.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented native Android CallScreeningService for background call blocking. Requires APK build and physical device testing."
 
   - task: "Tab Navigation"
     implemented: true
