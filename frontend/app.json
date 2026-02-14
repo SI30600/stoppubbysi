@@ -46,11 +46,6 @@
     "experiments": {
       "typedRoutes": true
     },
-    "extra": {
-      "eas": {
-        "projectId": "your-project-id"
-      }
-    },
     "owner": "si30600"
   }
 }
