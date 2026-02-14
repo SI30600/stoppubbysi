@@ -148,12 +148,14 @@ export default function SettingsScreen() {
         ]
       );
     } else {
-      // Web
-      Alert.alert(
-        'Version Web',
-        'Cette fonctionnalité n\'est disponible que sur l\'application mobile Android.\n\nTéléchargez l\'APK pour bloquer les appels.',
-        [{ text: 'OK' }]
-      );
+      // Web - use window.alert
+      if (typeof window !== 'undefined') {
+        window.alert(
+          'Version Web\n\n' +
+          'Cette fonctionnalité n\'est disponible que sur l\'application mobile Android.\n\n' +
+          'Téléchargez l\'APK pour bloquer les appels sur votre téléphone.'
+        );
+      }
     }
   };
 
