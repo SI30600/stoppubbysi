@@ -11,7 +11,7 @@ export default function RootLayout() {
         <Tabs
           screenOptions={{
             tabBarActiveTintColor: '#E91E63',
-            tabBarInactiveTintColor: '#666',
+            tabBarInactiveTintColor: '#1a1a2e',
             tabBarStyle: styles.tabBar,
             tabBarLabelStyle: styles.tabBarLabel,
             headerStyle: styles.header,
@@ -24,8 +24,8 @@ export default function RootLayout() {
             options={{
               title: 'Accueil',
               headerTitle: 'StopPubbySi',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="home" size={size} color={color} />
+              tabBarIcon: ({ color, focused }) => (
+                <Ionicons name={focused ? "home" : "home-outline"} size={28} color={color} />
               ),
             }}
           />
@@ -34,8 +34,8 @@ export default function RootLayout() {
             options={{
               title: 'Bloqués',
               headerTitle: 'Numéros Bloqués',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="ban" size={size} color={color} />
+              tabBarIcon: ({ color, focused }) => (
+                <Ionicons name={focused ? "ban" : "ban-outline"} size={28} color={color} />
               ),
             }}
           />
@@ -44,8 +44,8 @@ export default function RootLayout() {
             options={{
               title: 'Historique',
               headerTitle: 'Appels Filtrés',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="time" size={size} color={color} />
+              tabBarIcon: ({ color, focused }) => (
+                <Ionicons name={focused ? "time" : "time-outline"} size={28} color={color} />
               ),
             }}
           />
@@ -54,8 +54,8 @@ export default function RootLayout() {
             options={{
               title: 'Paramètres',
               headerTitle: 'Paramètres',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="settings" size={size} color={color} />
+              tabBarIcon: ({ color, focused }) => (
+                <Ionicons name={focused ? "settings" : "settings-outline"} size={28} color={color} />
               ),
             }}
           />
