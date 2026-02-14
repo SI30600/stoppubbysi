@@ -50,6 +50,7 @@ export default function SettingsScreen() {
   const [syncing, setSyncing] = useState(false);
   const [callBlockingEnabled, setCallBlockingEnabled] = useState(false);
   const [checkingCallBlocker, setCheckingCallBlocker] = useState(false);
+  const [showTipsModal, setShowTipsModal] = useState(false);
 
   // Check if call blocking is enabled on mount
   const checkCallBlockerStatus = useCallback(async () => {
