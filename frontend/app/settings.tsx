@@ -647,6 +647,109 @@ export default function SettingsScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Tips Modal */}
+      <Modal
+        visible={showTipsModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowTipsModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>🛡️ Réduire les appels commerciaux</Text>
+              <TouchableOpacity onPress={() => setShowTipsModal(false)}>
+                <Ionicons name="close-circle" size={28} color="#888" />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+              <View style={styles.tipItem}>
+                <Text style={styles.tipNumber}>1️⃣</Text>
+                <View style={styles.tipContent}>
+                  <Text style={styles.tipTitle}>Ne jamais confirmer ton identité ni dire "oui"</Text>
+                  <Text style={styles.tipText}>
+                    Exemple : au téléphone, répondre "Qui est à l'appareil ?" plutôt que de confirmer ton nom.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.tipItem}>
+                <Text style={styles.tipNumber}>2️⃣</Text>
+                <View style={styles.tipContent}>
+                  <Text style={styles.tipTitle}>Ne pas engager la conversation</Text>
+                  <Text style={styles.tipText}>
+                    Parle le moins possible, raccroche rapidement.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.tipItem}>
+                <Text style={styles.tipNumber}>3️⃣</Text>
+                <View style={styles.tipContent}>
+                  <Text style={styles.tipTitle}>Ne jamais rappeler un numéro inconnu</Text>
+                  <Text style={styles.tipText}>
+                    Rappeler confirme que ton numéro est actif et intéressant.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.tipItem}>
+                <Text style={styles.tipNumber}>4️⃣</Text>
+                <View style={styles.tipContent}>
+                  <Text style={styles.tipTitle}>S'inscrire sur Bloctel</Text>
+                  <Text style={styles.tipText}>
+                    Site officiel : bloctel.gouv.fr{'\n'}
+                    Protège légalement ton numéro pendant 3 ans.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.tipItem}>
+                <Text style={styles.tipNumber}>5️⃣</Text>
+                <View style={styles.tipContent}>
+                  <Text style={styles.tipTitle}>Activer le filtrage anti-spam sur ton téléphone</Text>
+                  <Text style={styles.tipText}>
+                    iPhone : "Silence des appelants inconnus"{'\n'}
+                    Android : "Filtrage des appels et SMS spam"
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.tipItem}>
+                <Text style={styles.tipNumber}>6️⃣</Text>
+                <View style={styles.tipContent}>
+                  <Text style={styles.tipTitle}>Nettoyer tes autorisations marketing</Text>
+                  <Text style={styles.tipText}>
+                    Décoche toutes les cases "J'accepte de recevoir des offres partenaires"{'\n'}
+                    Utilise une adresse e-mail secondaire pour les inscriptions en ligne.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.tipItem}>
+                <Text style={styles.tipNumber}>7️⃣</Text>
+                <View style={styles.tipContent}>
+                  <Text style={styles.tipTitle}>Ne jamais cliquer sur les liens ou répondre aux SMS commerciaux</Text>
+                  <Text style={styles.tipText}>
+                    Chaque interaction rend ton numéro plus "valeur commerciale".
+                  </Text>
+                </View>
+              </View>
+
+              <View style={{ height: 20 }} />
+            </ScrollView>
+
+            <TouchableOpacity 
+              style={styles.modalCloseButton}
+              onPress={() => setShowTipsModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Compris !</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
