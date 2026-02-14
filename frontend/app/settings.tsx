@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-const LOGO_URL = 'https://customer-assets.emergentagent.com/job_call-filter-2/artifacts/qwhs7ahd_logo%20SI.png';
+const LOGO_URL = 'https://customer-assets.emergentagent.com/job_call-filter-2/artifacts/qmcd8gr5_StopPubbySi.png';
 const WEBSITE_URL = 'https://solutioninformatique.fr';
 
 interface Settings {
