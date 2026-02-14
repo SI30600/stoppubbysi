@@ -133,12 +133,25 @@ export default function SettingsScreen() {
         '2. Sélectionnez StopPubbySi\n' +
         '3. Accordez les permissions "Téléphone"\n' +
         '4. Définissez comme app d\'identification d\'appels',
-        [{ text: 'Compris' }]
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Ouvrir Paramètres', onPress: () => Linking.openSettings() }
+        ]
       );
-    } else {
+    } else if (Platform.OS === 'ios') {
       Alert.alert(
         'iOS',
         'Sur iOS, allez dans Réglages > Téléphone > Blocage et identification pour configurer le blocage.',
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Ouvrir Réglages', onPress: () => Linking.openSettings() }
+        ]
+      );
+    } else {
+      // Web
+      Alert.alert(
+        'Version Web',
+        'Cette fonctionnalité n\'est disponible que sur l\'application mobile Android.\n\nTéléchargez l\'APK pour bloquer les appels.',
         [{ text: 'OK' }]
       );
     }
