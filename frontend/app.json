@@ -18,7 +18,13 @@
       },
       "package": "fr.solutioninformatique.stoppubbysi",
       "versionCode": 1,
-      "softwareKeyboardLayoutMode": "pan"
+      "softwareKeyboardLayoutMode": "pan",
+      "permissions": [
+        "android.permission.READ_PHONE_STATE",
+        "android.permission.READ_CALL_LOG",
+        "android.permission.ANSWER_PHONE_CALLS",
+        "android.permission.READ_CONTACTS"
+      ]
     },
     "androidStatusBar": {
       "hidden": true,
