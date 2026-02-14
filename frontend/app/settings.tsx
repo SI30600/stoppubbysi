@@ -444,6 +444,28 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Tips Section */}
+        <Text style={styles.sectionTitle}>Conseils</Text>
+        <View style={styles.section}>
+          <TouchableOpacity 
+            style={styles.actionItem} 
+            onPress={() => setShowTipsModal(true)}
+          >
+            <View style={styles.settingInfo}>
+              <View style={[styles.settingIconContainer, { backgroundColor: '#9C27B020' }]}>
+                <Ionicons name="bulb" size={20} color="#9C27B0" />
+              </View>
+              <View style={styles.settingText}>
+                <Text style={styles.settingTitle}>Astuces anti-démarchage</Text>
+                <Text style={styles.settingDescription}>
+                  7 conseils pour réduire les appels commerciaux
+                </Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#9C27B0" />
+          </TouchableOpacity>
+        </View>
+
         {/* Notifications Section */}
         <Text style={styles.sectionTitle}>Notifications</Text>
         <View style={styles.section}>
