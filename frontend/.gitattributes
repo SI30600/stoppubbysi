@@ -1,0 +1,8 @@
+# Handle line endings automatically for files detected as text
+* text=auto
+
+# Ensure jar files are treated as binary
+*.jar binary
+
+# Ensure gradle wrapper is always included
+android/gradle/wrapper/gradle-wrapper.jar binary -diff
