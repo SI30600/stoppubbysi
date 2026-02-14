@@ -170,13 +170,9 @@ export default function HomeScreen() {
             resizeMode="contain"
           />
           <View style={styles.protectionBadge}>
-            <Image 
-              source={{ uri: SPARTAN_HELMET_URL }} 
-              style={styles.spartanHelmet}
-            />
+            <Ionicons name="shield-checkmark" size={20} color="#4CAF50" />
             <Text style={styles.protectionText}>Protection Active</Text>
           </View>
-          <Text style={styles.headerTitle}>StopPubbySi</Text>
           <Text style={styles.headerSubtitle}>
             {statistics?.total_spam_numbers || 0} numéros dans la base
           </Text>
