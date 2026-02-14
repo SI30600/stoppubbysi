@@ -91,11 +91,27 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     const loadData = async () => {
-      await Promise.all([fetchSettings(), fetchSignalSpamStatus()]);
+      await Promise.all([fetchSettings(), fetchSignalSpamStatus(), checkCallBlockerStatus()]);
       setLoading(false);
     };
     loadData();
-  }, [fetchSettings, fetchSignalSpamStatus]);
+  }, [fetchSettings, fetchSignalSpamStatus, checkCallBlockerStatus]);
+
+  // Sync spam numbers to native module when settings are updated
+  const syncSpamNumbersToNative = useCallback(async () => {
+    if (Platform.OS !== 'android') return;
+    try {
+      const res = await fetch(`${API_URL}/api/spam-numbers`);
+      if (res.ok) {
+        const data = await res.json();
+        const numbers = data.map((item: any) => item.phone_number);
+        await CallBlocker.updateBlockedNumbers(numbers);
+        console.log(`Synced ${numbers.length} spam numbers to native module`);
+      }
+    } catch (error) {
+      console.error('Error syncing spam numbers to native:', error);
+    }
+  }, []);
 
   const updateSetting = async (key: keyof Settings, value: boolean) => {
     const previousValue = settings[key];
