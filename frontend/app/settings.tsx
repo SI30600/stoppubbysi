@@ -413,6 +413,35 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Bloctel Section */}
+        <Text style={styles.sectionTitle}>Bloctel - Liste d'opposition</Text>
+        <View style={styles.section}>
+          <View style={styles.infoItem}>
+            <Ionicons name="shield-checkmark" size={24} color="#0066CC" />
+            <Text style={styles.infoText}>
+              Inscrivez-vous gratuitement sur Bloctel pour interdire légalement aux entreprises de vous démarcher par téléphone. Valable 3 ans, renouvelable.
+            </Text>
+          </View>
+          <View style={styles.divider} />
+          <TouchableOpacity 
+            style={styles.actionItem} 
+            onPress={() => Linking.openURL('https://www.bloctel.gouv.fr/')}
+          >
+            <View style={styles.settingInfo}>
+              <View style={[styles.settingIconContainer, { backgroundColor: '#0066CC20' }]}>
+                <Ionicons name="open-outline" size={20} color="#0066CC" />
+              </View>
+              <View style={styles.settingText}>
+                <Text style={[styles.settingTitle, { color: '#0066CC' }]}>S'inscrire sur Bloctel</Text>
+                <Text style={styles.settingDescription}>
+                  Service officiel du gouvernement français
+                </Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#0066CC" />
+          </TouchableOpacity>
+        </View>
+
         {/* Notifications Section */}
         <Text style={styles.sectionTitle}>Notifications</Text>
         <View style={styles.section}>
