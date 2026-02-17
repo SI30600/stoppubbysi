@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import LoadingScreen from '../components/LoadingScreen';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const LOGO_URL = 'https://customer-assets.emergentagent.com/job_call-filter-2/artifacts/qmcd8gr5_StopPubbySi.png';
