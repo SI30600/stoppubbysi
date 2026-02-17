@@ -53,7 +53,7 @@ class CallBlockerModule(reactContext: ReactApplicationContext) : ReactContextBas
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val roleManager = reactApplicationContext.getSystemService(Context.ROLE_SERVICE) as RoleManager
                 val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING)
-                currentActivity?.startActivityForResult(intent, REQUEST_CODE_SET_DEFAULT_DIALER)
+                reactApplicationContext.currentActivity?.startActivityForResult(intent, REQUEST_CODE_SET_DEFAULT_DIALER)
                 promise.resolve(true)
             } else {
                 promise.resolve(false)
