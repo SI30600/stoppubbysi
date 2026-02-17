@@ -5,11 +5,20 @@ const { CallBlockerModule } = NativeModules;
 export interface CallBlockerSettings {
   auto_block_spam: boolean;
   block_unknown_numbers: boolean;
+  ai_screening_enabled: boolean;
+  ai_screening_delay: number;
 }
 
 export interface BlockedCallHistoryItem {
   phone_number: string;
   blocked_at: number;
+  reason?: string;
+}
+
+export interface PendingScreening {
+  phone_number: string;
+  timestamp: number;
+  status: string;
 }
 
 /**
@@ -90,6 +99,98 @@ const CallBlocker = {
       return await CallBlockerModule.setBlockUnknownNumbers(enabled);
     } catch (error) {
       console.error('Error setting block unknown:', error);
+      return false;
+    }
+  },
+
+  // AI Screening methods
+
+  /**
+   * Enable or disable AI call screening
+   */
+  setAIScreeningEnabled: async (enabled: boolean): Promise<boolean> => {
+    if (Platform.OS !== 'android') {
+      return false;
+    }
+    try {
+      return await CallBlockerModule.setAIScreeningEnabled(enabled);
+    } catch (error) {
+      console.error('Error setting AI screening:', error);
+      return false;
+    }
+  },
+
+  /**
+   * Check if AI screening is enabled
+   */
+  isAIScreeningEnabled: async (): Promise<boolean> => {
+    if (Platform.OS !== 'android') {
+      return false;
+    }
+    try {
+      return await CallBlockerModule.isAIScreeningEnabled();
+    } catch (error) {
+      console.error('Error checking AI screening status:', error);
+      return false;
+    }
+  },
+
+  /**
+   * Set the delay before AI screening activates (in seconds)
+   */
+  setAIScreeningDelay: async (delaySeconds: number): Promise<boolean> => {
+    if (Platform.OS !== 'android') {
+      return false;
+    }
+    try {
+      return await CallBlockerModule.setAIScreeningDelay(delaySeconds);
+    } catch (error) {
+      console.error('Error setting AI screening delay:', error);
+      return false;
+    }
+  },
+
+  /**
+   * Get the AI screening delay setting
+   */
+  getAIScreeningDelay: async (): Promise<number> => {
+    if (Platform.OS !== 'android') {
+      return 3;
+    }
+    try {
+      return await CallBlockerModule.getAIScreeningDelay();
+    } catch (error) {
+      console.error('Error getting AI screening delay:', error);
+      return 3;
+    }
+  },
+
+  /**
+   * Get pending AI screenings
+   */
+  getPendingScreenings: async (): Promise<PendingScreening[]> => {
+    if (Platform.OS !== 'android') {
+      return [];
+    }
+    try {
+      return await CallBlockerModule.getPendingScreenings();
+    } catch (error) {
+      console.error('Error getting pending screenings:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Clear pending AI screenings
+   */
+  clearPendingScreenings: async (): Promise<boolean> => {
+    if (Platform.OS !== 'android') {
+      return false;
+    }
+    try {
+      return await CallBlockerModule.clearPendingScreenings();
+    } catch (error) {
+      console.error('Error clearing pending screenings:', error);
       return false;
     }
   },
