@@ -174,29 +174,41 @@ export default function SettingsScreen() {
       if (requested) {
         // Wait a moment and check the status
         setTimeout(async () => {
-          const isEnabled = await CallBlocker.isCallScreeningServiceEnabled();
-          setCallBlockingEnabled(isEnabled);
-          setCheckingCallBlocker(false);
-          
-          if (isEnabled) {
-            // Sync spam numbers to native storage
-            await syncSpamNumbersToNative();
-            Alert.alert(
-              'Activé !',
-              'StopPubbySi est maintenant configuré pour bloquer les appels spam même quand l\'application est fermée.'
-            );
-          } else {
-            Alert.alert(
-              'Configuration requise',
-              'Veuillez sélectionner StopPubbySi comme application de filtrage d\'appels dans la fenêtre de dialogue Android.'
-            );
+          try {
+            const isEnabled = await CallBlocker.isCallScreeningServiceEnabled();
+            setCallBlockingEnabled(isEnabled);
+            
+            if (isEnabled) {
+              // Sync spam numbers to native storage
+              await syncSpamNumbersToNative();
+              Alert.alert(
+                'Activé !',
+                'StopPubbySi est maintenant configuré pour bloquer les appels spam même quand l\'application est fermée.'
+              );
+            } else {
+              Alert.alert(
+                'Configuration requise',
+                'Veuillez sélectionner StopPubbySi comme application de filtrage d\'appels dans les paramètres Android.'
+              );
+            }
+          } catch (e) {
+            console.error('Error checking status:', e);
+          } finally {
+            setCheckingCallBlocker(false);
           }
-        }, 1000);
+        }, 2000);
+      } else {
+        // Request failed or not supported
+        setCheckingCallBlocker(false);
+        Alert.alert(
+          'Non disponible',
+          'Cette fonctionnalité nécessite Android 10 ou supérieur.'
+        );
       }
     } catch (error) {
       console.error('Error activating call blocking:', error);
       setCheckingCallBlocker(false);
-      Alert.alert('Erreur', 'Impossible d\'activer le blocage d\'appels');
+      Alert.alert('Erreur', 'Impossible d\'activer le blocage d\'appels. Vérifiez que vous utilisez Android 10 ou supérieur.');
     }
   };
 
