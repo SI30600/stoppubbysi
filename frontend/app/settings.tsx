@@ -420,6 +420,66 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* AI Screening Section */}
+        {Platform.OS === 'android' && (
+          <>
+            <Text style={styles.sectionTitle}>Filtrage IA (Expérimental)</Text>
+            <View style={styles.section}>
+              <View style={styles.infoItem}>
+                <Ionicons name="sparkles" size={24} color="#9C27B0" />
+                <Text style={styles.infoText}>
+                  Quand un numéro inconnu appelle, l'IA répond automatiquement après 3 secondes et demande à l'appelant de s'identifier. Vous recevez ensuite une notification avec son nom et l'objet de l'appel.
+                </Text>
+              </View>
+              <View style={styles.divider} />
+              
+              <View style={styles.settingItem}>
+                <View style={styles.settingInfo}>
+                  <View style={[styles.settingIconContainer, { backgroundColor: '#9C27B020' }]}>
+                    <Ionicons name="mic" size={20} color="#9C27B0" />
+                  </View>
+                  <View style={styles.settingText}>
+                    <Text style={styles.settingTitle}>Filtrage vocal IA</Text>
+                    <Text style={styles.settingDescription}>
+                      Message : "Bonjour, vous n'êtes pas reconnu. Merci de vous identifier..."
+                    </Text>
+                  </View>
+                </View>
+                <Switch
+                  value={aiScreeningEnabled}
+                  onValueChange={async (value) => {
+                    setAiScreeningEnabled(value);
+                    await CallBlocker.setAIScreeningEnabled(value);
+                    if (value) {
+                      await CallBlocker.setAIScreeningDelay(3);
+                      Alert.alert(
+                        'Filtrage IA activé',
+                        'L\'IA répondra automatiquement aux appels inconnus après 3 secondes pour demander l\'identité de l\'appelant.',
+                        [{ text: 'Compris' }]
+                      );
+                    }
+                  }}
+                  trackColor={{ false: '#2a2a4e', true: '#9C27B060' }}
+                  thumbColor={aiScreeningEnabled ? '#9C27B0' : '#666'}
+                  disabled={!callBlockingEnabled}
+                />
+              </View>
+              
+              {!callBlockingEnabled && (
+                <>
+                  <View style={styles.divider} />
+                  <View style={styles.infoItem}>
+                    <Ionicons name="warning" size={20} color="#FF9800" />
+                    <Text style={[styles.infoText, { color: '#FF9800' }]}>
+                      Activez d'abord le "Blocage en arrière-plan" dans la section Configuration système ci-dessous.
+                    </Text>
+                  </View>
+                </>
+              )}
+            </View>
+          </>
+        )}
+
         {/* Bloctel Section */}
         <Text style={styles.sectionTitle}>Bloctel - Liste d'opposition</Text>
         <View style={styles.section}>
