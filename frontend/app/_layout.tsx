@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     paddingTop: 10,
     paddingBottom: Platform.OS === 'ios' ? 20 : 60,
-    height: Platform.OS === 'ios' ? 85 : 115,
+    height: Platform.OS === 'ios' ? 85 : 95,
     position: 'absolute',
     bottom: 0,
     left: 0,
