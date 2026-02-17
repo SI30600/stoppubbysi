@@ -142,12 +142,7 @@ export default function HomeScreen() {
   };
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#E91E63" />
-        <Text style={styles.loadingText}>Chargement...</Text>
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (
