@@ -51,6 +51,7 @@ export default function SettingsScreen() {
   const [callBlockingEnabled, setCallBlockingEnabled] = useState(false);
   const [checkingCallBlocker, setCheckingCallBlocker] = useState(false);
   const [showTipsModal, setShowTipsModal] = useState(false);
+  const [aiScreeningEnabled, setAiScreeningEnabled] = useState(false);
 
   // Check if call blocking is enabled on mount
   const checkCallBlockerStatus = useCallback(async () => {
@@ -59,6 +60,10 @@ export default function SettingsScreen() {
       try {
         const isEnabled = await CallBlocker.isCallScreeningServiceEnabled();
         setCallBlockingEnabled(isEnabled);
+        
+        // Also check AI screening status
+        const aiEnabled = await CallBlocker.isAIScreeningEnabled();
+        setAiScreeningEnabled(aiEnabled);
       } catch (error) {
         console.error('Error checking call blocker status:', error);
       } finally {
