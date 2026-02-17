@@ -9,6 +9,12 @@
   <uses-permission android:name="android.permission.READ_CALL_LOG"/>
   <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS"/>
   <uses-permission android:name="android.permission.READ_CONTACTS"/>
+  <!-- AI Screening Permissions -->
+  <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+  <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+  <uses-permission android:name="android.permission.CALL_PHONE"/>
   <queries>
     <intent>
       <action android:name="android.intent.action.VIEW"/>
