@@ -21,6 +21,8 @@ class CallBlockerModule(reactContext: ReactApplicationContext) : ReactContextBas
         private const val BLOCKED_NUMBERS_KEY = "blocked_numbers"
         private const val BLOCK_UNKNOWN_KEY = "block_unknown_numbers"
         private const val AUTO_BLOCK_KEY = "auto_block_spam"
+        private const val AI_SCREENING_KEY = "ai_screening_enabled"
+        private const val AI_SCREENING_DELAY_KEY = "ai_screening_delay"
         private const val REQUEST_CODE_SET_DEFAULT_DIALER = 1001
     }
     
@@ -104,6 +106,87 @@ class CallBlockerModule(reactContext: ReactApplicationContext) : ReactContextBas
         }
     }
     
+    // AI Screening methods
+    @ReactMethod
+    fun setAIScreeningEnabled(enabled: Boolean, promise: Promise) {
+        try {
+            getPrefs().edit()
+                .putBoolean(AI_SCREENING_KEY, enabled)
+                .apply()
+            Log.d(TAG, "AI Screening enabled: $enabled")
+            promise.resolve(true)
+        } catch (e: Exception) {
+            promise.reject("ERROR", e.message)
+        }
+    }
+    
+    @ReactMethod
+    fun isAIScreeningEnabled(promise: Promise) {
+        try {
+            val enabled = getPrefs().getBoolean(AI_SCREENING_KEY, false)
+            promise.resolve(enabled)
+        } catch (e: Exception) {
+            promise.reject("ERROR", e.message)
+        }
+    }
+    
+    @ReactMethod
+    fun setAIScreeningDelay(delaySeconds: Int, promise: Promise) {
+        try {
+            getPrefs().edit()
+                .putInt(AI_SCREENING_DELAY_KEY, delaySeconds)
+                .apply()
+            Log.d(TAG, "AI Screening delay set to: $delaySeconds seconds")
+            promise.resolve(true)
+        } catch (e: Exception) {
+            promise.reject("ERROR", e.message)
+        }
+    }
+    
+    @ReactMethod
+    fun getAIScreeningDelay(promise: Promise) {
+        try {
+            val delay = getPrefs().getInt(AI_SCREENING_DELAY_KEY, 3)
+            promise.resolve(delay)
+        } catch (e: Exception) {
+            promise.reject("ERROR", e.message)
+        }
+    }
+    
+    @ReactMethod
+    fun getPendingScreenings(promise: Promise) {
+        try {
+            val pendingJson = getPrefs().getString("pending_screenings", "[]") ?: "[]"
+            val pending = JSONArray(pendingJson)
+            
+            val result = Arguments.createArray()
+            for (i in 0 until pending.length()) {
+                val item = pending.getJSONObject(i)
+                val map = Arguments.createMap()
+                map.putString("phone_number", item.getString("phone_number"))
+                map.putDouble("timestamp", item.getLong("timestamp").toDouble())
+                map.putString("status", item.optString("status", "pending"))
+                result.pushMap(map)
+            }
+            
+            promise.resolve(result)
+        } catch (e: Exception) {
+            promise.reject("ERROR", e.message)
+        }
+    }
+    
+    @ReactMethod
+    fun clearPendingScreenings(promise: Promise) {
+        try {
+            getPrefs().edit()
+                .putString("pending_screenings", "[]")
+                .apply()
+            promise.resolve(true)
+        } catch (e: Exception) {
+            promise.reject("ERROR", e.message)
+        }
+    }
+    
     @ReactMethod
     fun getBlockedCallHistory(promise: Promise) {
         try {
@@ -116,6 +199,7 @@ class CallBlockerModule(reactContext: ReactApplicationContext) : ReactContextBas
                 val map = Arguments.createMap()
                 map.putString("phone_number", item.getString("phone_number"))
                 map.putDouble("blocked_at", item.getLong("blocked_at").toDouble())
+                map.putString("reason", item.optString("reason", "blocked"))
                 result.pushMap(map)
             }
             
@@ -144,6 +228,8 @@ class CallBlockerModule(reactContext: ReactApplicationContext) : ReactContextBas
             val result = Arguments.createMap()
             result.putBoolean("auto_block_spam", prefs.getBoolean(AUTO_BLOCK_KEY, true))
             result.putBoolean("block_unknown_numbers", prefs.getBoolean(BLOCK_UNKNOWN_KEY, false))
+            result.putBoolean("ai_screening_enabled", prefs.getBoolean(AI_SCREENING_KEY, false))
+            result.putInt("ai_screening_delay", prefs.getInt(AI_SCREENING_DELAY_KEY, 3))
             promise.resolve(result)
         } catch (e: Exception) {
             promise.reject("ERROR", e.message)
