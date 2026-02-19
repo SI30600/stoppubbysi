@@ -581,7 +581,6 @@ export default function SettingsScreen() {
               )}
             </View>
           </>
-        )}
 
         {/* Bloctel Section */}
         <Text style={styles.sectionTitle}>Bloctel - Liste d'opposition</Text>
