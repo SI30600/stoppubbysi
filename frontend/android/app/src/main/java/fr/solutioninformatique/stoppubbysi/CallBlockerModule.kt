@@ -43,7 +43,7 @@ class CallBlockerModule(reactContext: ReactApplicationContext) :
     override fun getName(): String = "CallBlockerModule"
 
     override fun onActivityResult(activity: Activity?, requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_CODE_CALL_SCREENING) {
+        if (requestCode == REQUEST_CODE_CALL_SCREENING || requestCode == REQUEST_CODE_DIALER) {
             if (resultCode == Activity.RESULT_OK) {
                 roleRequestPromise?.resolve(true)
             } else {
