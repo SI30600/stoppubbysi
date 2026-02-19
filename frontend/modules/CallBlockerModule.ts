@@ -58,6 +58,37 @@ const CallBlocker = {
   },
 
   /**
+   * Request the user to set this app as the default dialer (phone app)
+   * This is required for AI screening to work properly
+   */
+  requestDialerRole: async (): Promise<boolean> => {
+    if (Platform.OS !== 'android') {
+      return false;
+    }
+    try {
+      return await CallBlockerModule.requestDialerRole();
+    } catch (error) {
+      console.error('Error requesting dialer role:', error);
+      return false;
+    }
+  },
+
+  /**
+   * Check if the app is set as the default dialer
+   */
+  isDialerRoleHeld: async (): Promise<boolean> => {
+    if (Platform.OS !== 'android') {
+      return false;
+    }
+    try {
+      return await CallBlockerModule.isDialerRoleHeld();
+    } catch (error) {
+      console.error('Error checking dialer role:', error);
+      return false;
+    }
+  },
+
+  /**
    * Update the list of blocked phone numbers in native storage
    * These numbers will be blocked even when the app is closed
    */
