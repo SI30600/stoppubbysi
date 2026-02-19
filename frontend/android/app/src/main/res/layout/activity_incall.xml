@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1a1a2e"
+    android:padding="24dp">
+
+    <!-- Top section: Contact info -->
+    <LinearLayout
+        android:id="@+id/topSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="48dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <!-- Contact Avatar Placeholder -->
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@android:drawable/ic_menu_call"
+            android:background="#E91E63"
+            android:padding="24dp"
+            android:layout_marginBottom="24dp" />
+
+        <TextView
+            android:id="@+id/contactNameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nom du contact"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/phoneNumberText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="+33 6 12 34 56 78"
+            android:textColor="#888888"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/callStatusText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Appel entrant..."
+            android:textColor="#4CAF50"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/callDurationText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="00:00"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
+            android:visibility="gone" />
+
+        <!-- AI Status -->
+        <TextView
+            android:id="@+id/aiStatusText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="#2a2a4e"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:text="🤖 Filtrage IA actif"
+            android:textColor="#9C27B0"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- Middle section: Call controls -->
+    <LinearLayout
+        android:id="@+id/middleControls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/speakerButton"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="16dp"
+            android:background="#2a2a4e"
+            android:src="@android:drawable/ic_lock_silent_mode_off"
+            android:padding="16dp"
+            android:alpha="0.5"
+            android:contentDescription="Haut-parleur" />
+
+        <ImageButton
+            android:id="@+id/muteButton"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="16dp"
+            android:background="#2a2a4e"
+            android:src="@android:drawable/ic_btn_speak_now"
+            android:padding="16dp"
+            android:alpha="0.5"
+            android:contentDescription="Muet" />
+
+    </LinearLayout>
+
+    <!-- Bottom section: Answer/Reject/Hangup buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="48dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <!-- Reject Button -->
+        <Button
+            android:id="@+id/rejectButton"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="16dp"
+            android:background="@android:drawable/ic_delete"
+            android:backgroundTint="#F44336"
+            android:text=""
+            android:visibility="visible" />
+
+        <!-- Answer Button -->
+        <Button
+            android:id="@+id/answerButton"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="16dp"
+            android:background="@android:drawable/ic_menu_call"
+            android:backgroundTint="#4CAF50"
+            android:text=""
+            android:visibility="visible" />
+
+        <!-- Hangup Button -->
+        <Button
+            android:id="@+id/hangupButton"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="16dp"
+            android:background="@android:drawable/ic_menu_close_clear_cancel"
+            android:backgroundTint="#F44336"
+            android:text=""
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</RelativeLayout>
