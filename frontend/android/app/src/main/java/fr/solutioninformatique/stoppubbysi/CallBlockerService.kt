@@ -1,13 +1,14 @@
 package fr.solutioninformatique.stoppubbysi
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.database.Cursor
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -16,7 +17,6 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.telecom.Call
 import android.telecom.CallScreeningService
-import android.telecom.TelecomManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.edit
@@ -28,17 +28,20 @@ class CallBlockerService : CallScreeningService() {
 
     private val TAG = "CallBlockerService"
     private val CHANNEL_ID = "call_blocker_channel"
-    private val NOTIFICATION_ID = 1001
     
     private lateinit var prefs: SharedPreferences
     private var tts: TextToSpeech? = null
     private var ttsReady = false
     private val handler = Handler(Looper.getMainLooper())
+    private var audioManager: AudioManager? = null
+    private var audioFocusRequest: AudioFocusRequest? = null
+    private var currentCallDetails: Call.Details? = null
 
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "CallBlockerService created")
         prefs = getSharedPreferences("call_blocker_prefs", Context.MODE_PRIVATE)
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
         createNotificationChannel()
         initTTS()
     }
@@ -48,20 +51,30 @@ class CallBlockerService : CallScreeningService() {
             if (status == TextToSpeech.SUCCESS) {
                 val result = tts?.setLanguage(Locale.FRENCH)
                 if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    Log.e(TAG, "French language not supported for TTS")
-                    // Fallback to default
+                    Log.e(TAG, "French language not supported for TTS, using default")
                     tts?.setLanguage(Locale.getDefault())
                 }
+                
+                // Configure TTS for phone call audio stream
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    val audioAttributes = AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .build()
+                    tts?.setAudioAttributes(audioAttributes)
+                }
+                
                 ttsReady = true
-                Log.d(TAG, "TTS initialized successfully")
+                Log.d(TAG, "TTS initialized successfully for voice communication")
             } else {
-                Log.e(TAG, "TTS initialization failed")
+                Log.e(TAG, "TTS initialization failed with status: $status")
             }
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        releaseAudioFocus()
         tts?.stop()
         tts?.shutdown()
         tts = null
@@ -69,61 +82,71 @@ class CallBlockerService : CallScreeningService() {
 
     override fun onScreenCall(callDetails: Call.Details) {
         val phoneNumber = callDetails.handle?.schemeSpecificPart ?: ""
-        Log.d(TAG, "Screening call from: $phoneNumber")
+        Log.d(TAG, "=== SCREENING CALL FROM: $phoneNumber ===")
 
         val autoBlockEnabled = prefs.getBoolean(CallBlockerModule.PREF_AUTO_BLOCK_ENABLED, true)
         val blockUnknown = prefs.getBoolean(CallBlockerModule.PREF_BLOCK_UNKNOWN, false)
         val aiScreeningEnabled = prefs.getBoolean(CallBlockerModule.PREF_AI_SCREENING_ENABLED, false)
 
-        // Check if number is in blocked list
+        Log.d(TAG, "Settings - autoBlock: $autoBlockEnabled, blockUnknown: $blockUnknown, aiScreening: $aiScreeningEnabled")
+
         val isBlocked = isNumberBlocked(phoneNumber)
-        
-        // Check if number is in contacts
         val isInContacts = isNumberInContacts(phoneNumber)
         
-        // Decide what to do with the call
+        Log.d(TAG, "Number status - isBlocked: $isBlocked, isInContacts: $isInContacts")
+
         val response = CallResponse.Builder()
         
         when {
             // Block known spam numbers
             autoBlockEnabled && isBlocked -> {
-                Log.d(TAG, "Blocking known spam number: $phoneNumber")
+                Log.d(TAG, ">>> BLOCKING spam number: $phoneNumber")
                 response.setDisallowCall(true)
                 response.setRejectCall(true)
                 response.setSkipCallLog(false)
                 response.setSkipNotification(false)
                 
                 addToBlockedHistory(phoneNumber, "Numéro spam connu")
-                showNotification("Appel bloqué", "Numéro spam: $phoneNumber")
+                showNotification("🚫 Appel bloqué", "Spam: $phoneNumber")
             }
             
             // Block all unknown numbers if enabled
             blockUnknown && !isInContacts -> {
-                Log.d(TAG, "Blocking unknown number: $phoneNumber")
+                Log.d(TAG, ">>> BLOCKING unknown number: $phoneNumber")
                 response.setDisallowCall(true)
                 response.setRejectCall(true)
                 response.setSkipCallLog(false)
                 response.setSkipNotification(false)
                 
                 addToBlockedHistory(phoneNumber, "Numéro inconnu")
-                showNotification("Appel bloqué", "Numéro inconnu: $phoneNumber")
+                showNotification("🚫 Appel bloqué", "Inconnu: $phoneNumber")
             }
             
-            // AI screening for unknown numbers
+            // AI screening for unknown numbers - ANSWER AND SPEAK
             aiScreeningEnabled && !isInContacts && !isBlocked -> {
-                Log.d(TAG, "AI screening for: $phoneNumber")
-                // Let the call ring, but schedule AI screening
+                Log.d(TAG, ">>> AI SCREENING for: $phoneNumber")
+                currentCallDetails = callDetails
+                
+                // SILENTLY ANSWER the call to play the AI message
                 response.setDisallowCall(false)
                 response.setRejectCall(false)
+                response.setSilenceCall(true)  // Silence the ringtone
                 
-                // Schedule the AI to answer after delay
-                val delay = prefs.getInt(CallBlockerModule.PREF_AI_SCREENING_DELAY, 3) * 1000L
-                scheduleAIScreening(phoneNumber, delay)
+                // Store for AI processing
+                addToPendingScreenings(phoneNumber, "answering")
+                
+                // Schedule AI response IMMEDIATELY (no delay - answer right away)
+                val delay = prefs.getInt(CallBlockerModule.PREF_AI_SCREENING_DELAY, 1) * 1000L
+                handler.postDelayed({
+                    performAIScreeningWithAudio(phoneNumber, callDetails)
+                }, delay)
+                
+                showNotification("🤖 Filtrage IA en cours", "Analyse de: $phoneNumber")
             }
             
-            // Allow the call
+            // Allow the call normally
             else -> {
-                Log.d(TAG, "Allowing call from: $phoneNumber")
+                Log.d(TAG, ">>> ALLOWING call from: $phoneNumber")
                 response.setDisallowCall(false)
                 response.setRejectCall(false)
             }
@@ -132,17 +155,124 @@ class CallBlockerService : CallScreeningService() {
         respondToCall(callDetails, response.build())
     }
 
+    private fun performAIScreeningWithAudio(phoneNumber: String, callDetails: Call.Details) {
+        Log.d(TAG, "=== PERFORMING AI SCREENING WITH AUDIO ===")
+        
+        if (!ttsReady || tts == null) {
+            Log.e(TAG, "TTS not ready!")
+            updatePendingScreening(phoneNumber, "tts_not_ready")
+            showNotification("❌ Erreur IA", "TTS non disponible")
+            return
+        }
+
+        try {
+            // Request audio focus for voice communication
+            requestAudioFocus()
+            
+            // Set audio mode to communication
+            audioManager?.mode = AudioManager.MODE_IN_COMMUNICATION
+            audioManager?.isSpeakerphoneOn = true
+            
+            Log.d(TAG, "Audio configured for voice communication, starting TTS...")
+            
+            // Speak the AI message
+            speakAIMessage(phoneNumber)
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in AI screening with audio", e)
+            updatePendingScreening(phoneNumber, "error: ${e.message}")
+            showNotification("❌ Erreur IA", "Échec: ${e.message}")
+        }
+    }
+
+    private fun requestAudioFocus() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build()
+            
+            audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+                .setAudioAttributes(audioAttributes)
+                .setAcceptsDelayedFocusGain(false)
+                .build()
+            
+            val result = audioManager?.requestAudioFocus(audioFocusRequest!!)
+            Log.d(TAG, "Audio focus request result: $result")
+        } else {
+            @Suppress("DEPRECATION")
+            audioManager?.requestAudioFocus(
+                null,
+                AudioManager.STREAM_VOICE_CALL,
+                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT
+            )
+        }
+    }
+
+    private fun releaseAudioFocus() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            audioFocusRequest?.let {
+                audioManager?.abandonAudioFocusRequest(it)
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            audioManager?.abandonAudioFocus(null)
+        }
+        audioManager?.mode = AudioManager.MODE_NORMAL
+        audioManager?.isSpeakerphoneOn = false
+    }
+
+    private fun speakAIMessage(phoneNumber: String) {
+        val message = "Bonjour. Vous avez joint un système de filtrage automatique. " +
+                "Veuillez vous identifier en indiquant votre nom et l'objet de votre appel. " +
+                "Merci de patienter."
+        
+        Log.d(TAG, "Speaking AI message: $message")
+        
+        tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+            override fun onStart(utteranceId: String?) {
+                Log.d(TAG, ">>> TTS STARTED speaking")
+                updatePendingScreening(phoneNumber, "speaking")
+            }
+
+            override fun onDone(utteranceId: String?) {
+                Log.d(TAG, ">>> TTS COMPLETED")
+                updatePendingScreening(phoneNumber, "message_delivered")
+                releaseAudioFocus()
+                showNotification(
+                    "✅ Message IA envoyé",
+                    "Le numéro $phoneNumber a reçu le message de filtrage"
+                )
+            }
+
+            override fun onError(utteranceId: String?) {
+                Log.e(TAG, ">>> TTS ERROR")
+                updatePendingScreening(phoneNumber, "tts_error")
+                releaseAudioFocus()
+                showNotification("❌ Erreur TTS", "Échec pour $phoneNumber")
+            }
+        })
+        
+        // Speak with high priority
+        val params = android.os.Bundle()
+        params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_VOICE_CALL)
+        params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1.0f)
+        
+        val result = tts?.speak(message, TextToSpeech.QUEUE_FLUSH, params, "ai_screening_${System.currentTimeMillis()}")
+        Log.d(TAG, "TTS speak result: $result")
+    }
+
     private fun isNumberBlocked(phoneNumber: String): Boolean {
         try {
             val json = prefs.getString(CallBlockerModule.PREF_BLOCKED_NUMBERS, "[]") ?: "[]"
             val blockedNumbers = JSONArray(json)
-            
-            // Normalize phone number for comparison
             val normalizedNumber = normalizePhoneNumber(phoneNumber)
             
             for (i in 0 until blockedNumbers.length()) {
                 val blocked = normalizePhoneNumber(blockedNumbers.getString(i))
-                if (normalizedNumber.endsWith(blocked) || blocked.endsWith(normalizedNumber)) {
+                if (normalizedNumber.endsWith(blocked) || blocked.endsWith(normalizedNumber) ||
+                    normalizedNumber.contains(blocked) || blocked.contains(normalizedNumber)) {
+                    Log.d(TAG, "Number $phoneNumber matches blocked number $blocked")
                     return true
                 }
             }
@@ -153,7 +283,7 @@ class CallBlockerService : CallScreeningService() {
     }
 
     private fun normalizePhoneNumber(number: String): String {
-        return number.replace(Regex("[^0-9+]"), "")
+        return number.replace(Regex("[^0-9]"), "").takeLast(9)
     }
 
     private fun isNumberInContacts(phoneNumber: String): Boolean {
@@ -171,92 +301,14 @@ class CallBlockerService : CallScreeningService() {
             )
             
             cursor?.use {
-                return it.count > 0
+                val inContacts = it.count > 0
+                Log.d(TAG, "Number $phoneNumber in contacts: $inContacts")
+                return inContacts
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error checking contacts", e)
         }
         return false
-    }
-
-    private fun scheduleAIScreening(phoneNumber: String, delayMs: Long) {
-        // Add to pending screenings
-        addToPendingScreenings(phoneNumber, "scheduled")
-        
-        handler.postDelayed({
-            performAIScreening(phoneNumber)
-        }, delayMs)
-    }
-
-    private fun performAIScreening(phoneNumber: String) {
-        Log.d(TAG, "Performing AI screening for: $phoneNumber")
-        
-        if (!ttsReady || tts == null) {
-            Log.e(TAG, "TTS not ready for AI screening")
-            updatePendingScreening(phoneNumber, "tts_error")
-            return
-        }
-        
-        try {
-            // Try to answer the call using TelecomManager
-            val telecomManager = getSystemService(Context.TELECOM_SERVICE) as? TelecomManager
-            
-            if (telecomManager != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                try {
-                    telecomManager.acceptRingingCall()
-                    Log.d(TAG, "Call answered for AI screening")
-                    
-                    // Wait a moment then speak
-                    handler.postDelayed({
-                        speakAIMessage(phoneNumber)
-                    }, 500)
-                    
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "Permission denied to answer call", e)
-                    updatePendingScreening(phoneNumber, "permission_error")
-                }
-            } else {
-                Log.e(TAG, "TelecomManager not available or API too low")
-                updatePendingScreening(phoneNumber, "api_error")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error performing AI screening", e)
-            updatePendingScreening(phoneNumber, "error")
-        }
-    }
-
-    private fun speakAIMessage(phoneNumber: String) {
-        val message = "Bonjour, vous avez joint un système de filtrage automatique. " +
-                "Veuillez vous identifier en indiquant votre nom et l'objet de votre appel. " +
-                "Merci."
-        
-        tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(utteranceId: String?) {
-                Log.d(TAG, "TTS started")
-                updatePendingScreening(phoneNumber, "speaking")
-            }
-
-            override fun onDone(utteranceId: String?) {
-                Log.d(TAG, "TTS completed")
-                updatePendingScreening(phoneNumber, "completed")
-                showNotification(
-                    "Appel filtré par IA",
-                    "Le numéro $phoneNumber a reçu le message de filtrage"
-                )
-            }
-
-            override fun onError(utteranceId: String?) {
-                Log.e(TAG, "TTS error")
-                updatePendingScreening(phoneNumber, "tts_error")
-            }
-        })
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            tts?.speak(message, TextToSpeech.QUEUE_FLUSH, null, "ai_screening")
-        } else {
-            @Suppress("DEPRECATION")
-            tts?.speak(message, TextToSpeech.QUEUE_FLUSH, null)
-        }
     }
 
     private fun addToBlockedHistory(phoneNumber: String, reason: String) {
@@ -270,7 +322,6 @@ class CallBlockerService : CallScreeningService() {
                 put("reason", reason)
             }
             
-            // Add to beginning of array
             val newHistory = JSONArray()
             newHistory.put(entry)
             for (i in 0 until minOf(history.length(), 99)) {
@@ -278,6 +329,7 @@ class CallBlockerService : CallScreeningService() {
             }
             
             prefs.edit { putString(CallBlockerModule.PREF_BLOCKED_CALL_HISTORY, newHistory.toString()) }
+            Log.d(TAG, "Added to blocked history: $phoneNumber - $reason")
         } catch (e: Exception) {
             Log.e(TAG, "Error adding to blocked history", e)
         }
@@ -296,6 +348,7 @@ class CallBlockerService : CallScreeningService() {
             
             screenings.put(entry)
             prefs.edit { putString(CallBlockerModule.PREF_PENDING_SCREENINGS, screenings.toString()) }
+            Log.d(TAG, "Added pending screening: $phoneNumber - $status")
         } catch (e: Exception) {
             Log.e(TAG, "Error adding pending screening", e)
         }
@@ -315,6 +368,7 @@ class CallBlockerService : CallScreeningService() {
             }
             
             prefs.edit { putString(CallBlockerModule.PREF_PENDING_SCREENINGS, screenings.toString()) }
+            Log.d(TAG, "Updated pending screening: $phoneNumber -> $status")
         } catch (e: Exception) {
             Log.e(TAG, "Error updating pending screening", e)
         }
@@ -322,11 +376,13 @@ class CallBlockerService : CallScreeningService() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Blocage d'appels"
-            val descriptionText = "Notifications pour les appels bloqués"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Blocage d'appels StopPubbySi",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notifications pour les appels bloqués et filtrés"
+                enableVibration(true)
             }
             
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -338,9 +394,7 @@ class CallBlockerService : CallScreeningService() {
         try {
             val intent = packageManager.getLaunchIntentForPackage(packageName)
             val pendingIntent = PendingIntent.getActivity(
-                this,
-                0,
-                intent,
+                this, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
@@ -348,13 +402,15 @@ class CallBlockerService : CallScreeningService() {
                 .setSmallIcon(android.R.drawable.ic_menu_call)
                 .setContentTitle(title)
                 .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
+                .setVibrate(longArrayOf(0, 250, 250, 250))
                 .build()
 
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+            Log.d(TAG, "Notification shown: $title - $message")
         } catch (e: Exception) {
             Log.e(TAG, "Error showing notification", e)
         }
