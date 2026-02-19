@@ -101,6 +101,52 @@ class CallBlockerModule(reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun requestDialerRole(promise: Promise) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val roleManager = reactApplicationContext.getSystemService(Context.ROLE_SERVICE) as? RoleManager
+                if (roleManager != null && roleManager.isRoleAvailable(RoleManager.ROLE_DIALER)) {
+                    if (roleManager.isRoleHeld(RoleManager.ROLE_DIALER)) {
+                        Log.d(TAG, "Dialer role already held")
+                        promise.resolve(true)
+                        return
+                    }
+                    
+                    roleRequestPromise = promise
+                    val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER)
+                    currentActivity?.startActivityForResult(intent, REQUEST_CODE_DIALER)
+                } else {
+                    Log.w(TAG, "Dialer role not available")
+                    promise.resolve(false)
+                }
+            } else {
+                Log.w(TAG, "Android version too low for dialer role")
+                promise.resolve(false)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error requesting dialer role", e)
+            promise.reject("ERROR", e.message)
+        }
+    }
+
+    @ReactMethod
+    fun isDialerRoleHeld(promise: Promise) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val roleManager = reactApplicationContext.getSystemService(Context.ROLE_SERVICE) as? RoleManager
+                val isHeld = roleManager?.isRoleHeld(RoleManager.ROLE_DIALER) ?: false
+                Log.d(TAG, "Dialer role held: $isHeld")
+                promise.resolve(isHeld)
+            } else {
+                promise.resolve(false)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking dialer role", e)
+            promise.reject("ERROR", e.message)
+        }
+    }
+
+    @ReactMethod
     fun updateBlockedNumbers(numbers: ReadableArray, promise: Promise) {
         try {
             val numberList = mutableListOf<String>()
