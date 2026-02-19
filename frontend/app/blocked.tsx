@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 110,
     right: 24,
     width: 56,
     height: 56,
@@ -564,11 +564,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#E91E63',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4,
+    elevation: 8,
     shadowColor: '#E91E63',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
+    zIndex: 1000,
   },
   modalOverlay: {
     flex: 1,
