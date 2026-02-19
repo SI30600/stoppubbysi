@@ -438,26 +438,26 @@ export default function SettingsScreen() {
         </View>
 
         {/* AI Screening Section */}
-        {Platform.OS === 'android' && (
-          <>
-            <Text style={styles.sectionTitle}>Filtrage IA (Dialer)</Text>
-            <View style={styles.section}>
-              <View style={styles.infoItem}>
-                <Ionicons name="sparkles" size={24} color="#9C27B0" />
-                <Text style={styles.infoText}>
-                  Pour que l'IA puisse répondre aux appels et parler à l'appelant, StopPubbySi doit devenir votre application Téléphone par défaut.
-                </Text>
-              </View>
-              
-              {/* Default Dialer Status */}
-              <View style={styles.divider} />
-              <View style={styles.settingItem}>
-                <View style={styles.settingInfo}>
-                  <View style={[styles.settingIconContainer, { backgroundColor: isDefaultDialer ? '#4CAF5020' : '#FF980020' }]}>
-                    <Ionicons 
-                      name={isDefaultDialer ? 'call' : 'call-outline'} 
-                      size={20} 
-                      color={isDefaultDialer ? '#4CAF50' : '#FF9800'} 
+        <>
+          <Text style={styles.sectionTitle}>Filtrage IA (Dialer)</Text>
+          <View style={styles.section}>
+            <View style={styles.infoItem}>
+              <Ionicons name="sparkles" size={24} color="#9C27B0" />
+              <Text style={styles.infoText}>
+                Pour que l'IA puisse répondre aux appels et parler à l'appelant, StopPubbySi doit devenir votre application Téléphone par défaut.
+                {Platform.OS !== 'android' && '\n\n⚠️ Cette fonctionnalité nécessite l\'APK Android.'}
+              </Text>
+            </View>
+            
+            {/* Default Dialer Status */}
+            <View style={styles.divider} />
+            <View style={styles.settingItem}>
+              <View style={styles.settingInfo}>
+                <View style={[styles.settingIconContainer, { backgroundColor: isDefaultDialer ? '#4CAF5020' : '#FF980020' }]}>
+                  <Ionicons 
+                    name={isDefaultDialer ? 'call' : 'call-outline'} 
+                    size={20} 
+                    color={isDefaultDialer ? '#4CAF50' : '#FF9800'} 
                     />
                   </View>
                   <View style={styles.settingText}>
