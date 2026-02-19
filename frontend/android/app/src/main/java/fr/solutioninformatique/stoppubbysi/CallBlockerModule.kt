@@ -25,6 +25,7 @@ class CallBlockerModule(reactContext: ReactApplicationContext) :
     companion object {
         private const val TAG = "CallBlockerModule"
         private const val REQUEST_CODE_CALL_SCREENING = 1001
+        private const val REQUEST_CODE_DIALER = 1002
         
         const val PREF_BLOCKED_NUMBERS = "blocked_numbers"
         const val PREF_AUTO_BLOCK_ENABLED = "auto_block_enabled"
