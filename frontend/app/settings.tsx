@@ -440,14 +440,92 @@ export default function SettingsScreen() {
         {/* AI Screening Section */}
         {Platform.OS === 'android' && (
           <>
-            <Text style={styles.sectionTitle}>Filtrage IA (Expérimental)</Text>
+            <Text style={styles.sectionTitle}>Filtrage IA (Dialer)</Text>
             <View style={styles.section}>
               <View style={styles.infoItem}>
                 <Ionicons name="sparkles" size={24} color="#9C27B0" />
                 <Text style={styles.infoText}>
-                  Quand un numéro inconnu appelle, l'IA répond automatiquement après 3 secondes et demande à l'appelant de s'identifier. Vous recevez ensuite une notification avec son nom et l'objet de l'appel.
+                  Pour que l'IA puisse répondre aux appels et parler à l'appelant, StopPubbySi doit devenir votre application Téléphone par défaut.
                 </Text>
               </View>
+              
+              {/* Default Dialer Status */}
+              <View style={styles.divider} />
+              <View style={styles.settingItem}>
+                <View style={styles.settingInfo}>
+                  <View style={[styles.settingIconContainer, { backgroundColor: isDefaultDialer ? '#4CAF5020' : '#FF980020' }]}>
+                    <Ionicons 
+                      name={isDefaultDialer ? 'call' : 'call-outline'} 
+                      size={20} 
+                      color={isDefaultDialer ? '#4CAF50' : '#FF9800'} 
+                    />
+                  </View>
+                  <View style={styles.settingText}>
+                    <Text style={styles.settingTitle}>App Téléphone par défaut</Text>
+                    <Text style={styles.settingDescription}>
+                      {isDefaultDialer 
+                        ? '✓ StopPubbySi gère vos appels'
+                        : 'Requis pour le filtrage IA vocal'}
+                    </Text>
+                  </View>
+                </View>
+                {checkingCallBlocker ? (
+                  <ActivityIndicator size="small" color="#9C27B0" />
+                ) : (
+                  <View style={[styles.statusBadge, { backgroundColor: isDefaultDialer ? '#4CAF5020' : '#FF980020' }]}>
+                    <Text style={[styles.statusText, { color: isDefaultDialer ? '#4CAF50' : '#FF9800' }]}>
+                      {isDefaultDialer ? 'Actif' : 'Inactif'}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {!isDefaultDialer && (
+                <>
+                  <View style={styles.divider} />
+                  <TouchableOpacity 
+                    style={styles.actionItem} 
+                    onPress={async () => {
+                      setCheckingCallBlocker(true);
+                      try {
+                        const result = await CallBlocker.requestDialerRole();
+                        setTimeout(async () => {
+                          const dialerEnabled = await CallBlocker.isDialerRoleHeld();
+                          setIsDefaultDialer(dialerEnabled);
+                          if (dialerEnabled) {
+                            Alert.alert(
+                              '✅ Configuré !',
+                              'StopPubbySi est maintenant votre application Téléphone. L\'IA pourra répondre aux appels inconnus.',
+                              [{ text: 'Super !' }]
+                            );
+                          }
+                          setCheckingCallBlocker(false);
+                        }, 2000);
+                      } catch (e) {
+                        setCheckingCallBlocker(false);
+                        Alert.alert('Erreur', 'Impossible de configurer StopPubbySi comme app Téléphone.');
+                      }
+                    }}
+                    disabled={checkingCallBlocker}
+                  >
+                    <View style={styles.settingInfo}>
+                      <View style={[styles.settingIconContainer, { backgroundColor: '#9C27B020' }]}>
+                        <Ionicons name="phone-portrait" size={20} color="#9C27B0" />
+                      </View>
+                      <View style={styles.settingText}>
+                        <Text style={[styles.settingTitle, { color: '#9C27B0' }]}>
+                          Devenir app Téléphone
+                        </Text>
+                        <Text style={styles.settingDescription}>
+                          Remplacer l'app Téléphone par StopPubbySi
+                        </Text>
+                      </View>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#9C27B0" />
+                  </TouchableOpacity>
+                </>
+              )}
+              
               <View style={styles.divider} />
               
               <View style={styles.settingItem}>
@@ -458,37 +536,45 @@ export default function SettingsScreen() {
                   <View style={styles.settingText}>
                     <Text style={styles.settingTitle}>Filtrage vocal IA</Text>
                     <Text style={styles.settingDescription}>
-                      Message : "Bonjour, vous n'êtes pas reconnu. Merci de vous identifier..."
+                      Message : "Bonjour, veuillez vous identifier..."
                     </Text>
                   </View>
                 </View>
                 <Switch
                   value={aiScreeningEnabled}
                   onValueChange={async (value) => {
+                    if (value && !isDefaultDialer) {
+                      Alert.alert(
+                        'Configuration requise',
+                        'Pour activer le filtrage IA, vous devez d\'abord définir StopPubbySi comme application Téléphone par défaut.',
+                        [{ text: 'Compris' }]
+                      );
+                      return;
+                    }
                     setAiScreeningEnabled(value);
                     await CallBlocker.setAIScreeningEnabled(value);
                     if (value) {
                       await CallBlocker.setAIScreeningDelay(3);
                       Alert.alert(
                         'Filtrage IA activé',
-                        'L\'IA répondra automatiquement aux appels inconnus après 3 secondes pour demander l\'identité de l\'appelant.',
+                        'L\'IA répondra automatiquement aux appels inconnus après 3 secondes et demandera à l\'appelant de s\'identifier.',
                         [{ text: 'Compris' }]
                       );
                     }
                   }}
                   trackColor={{ false: '#2a2a4e', true: '#9C27B060' }}
                   thumbColor={aiScreeningEnabled ? '#9C27B0' : '#666'}
-                  disabled={!callBlockingEnabled}
+                  disabled={!isDefaultDialer}
                 />
               </View>
               
-              {!callBlockingEnabled && (
+              {!isDefaultDialer && (
                 <>
                   <View style={styles.divider} />
                   <View style={styles.infoItem}>
                     <Ionicons name="warning" size={20} color="#FF9800" />
                     <Text style={[styles.infoText, { color: '#FF9800' }]}>
-                      Activez d'abord le "Blocage en arrière-plan" dans la section Configuration système ci-dessous.
+                      Cliquez sur "Devenir app Téléphone" ci-dessus pour activer cette fonctionnalité.
                     </Text>
                   </View>
                 </>
