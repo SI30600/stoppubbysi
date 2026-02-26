@@ -22,13 +22,16 @@
       "permissions": [
         "android.permission.READ_PHONE_STATE",
         "android.permission.READ_CALL_LOG",
+        "android.permission.WRITE_CALL_LOG",
         "android.permission.ANSWER_PHONE_CALLS",
         "android.permission.READ_CONTACTS",
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.FOREGROUND_SERVICE",
-        "android.permission.CALL_PHONE"
+        "android.permission.CALL_PHONE",
+        "android.permission.MANAGE_OWN_CALLS",
+        "android.permission.PROCESS_OUTGOING_CALLS"
       ]
     },
     "androidStatusBar": {
