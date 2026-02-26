@@ -170,6 +170,16 @@ export default function SettingsScreen() {
       return;
     }
 
+    // Check if native module is available
+    if (!CallBlocker.isNativeModuleAvailable()) {
+      Alert.alert(
+        'APK requis',
+        'Cette fonctionnalité nécessite l\'APK compilé. Elle ne fonctionne pas avec Expo Go.\n\nReconstruisez l\'APK avec:\neas build --platform android --profile preview --clear-cache',
+        [{ text: 'Compris' }]
+      );
+      return;
+    }
+
     try {
       setCheckingCallBlocker(true);
       console.log('Requesting call screening role...');
