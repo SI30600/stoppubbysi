@@ -2,6 +2,11 @@ import { NativeModules, Platform } from 'react-native';
 
 const { CallBlockerModule } = NativeModules;
 
+// Check if native module is available
+const isNativeModuleAvailable = (): boolean => {
+  return Platform.OS === 'android' && CallBlockerModule != null;
+};
+
 export interface CallBlockerSettings {
   auto_block_spam: boolean;
   block_unknown_numbers: boolean;
@@ -27,10 +32,18 @@ export interface PendingScreening {
  */
 const CallBlocker = {
   /**
+   * Check if native module is available (only in built APK, not Expo Go)
+   */
+  isNativeModuleAvailable: (): boolean => {
+    return isNativeModuleAvailable();
+  },
+
+  /**
    * Check if the app is set as the default call screening service
    */
   isCallScreeningServiceEnabled: async (): Promise<boolean> => {
-    if (Platform.OS !== 'android') {
+    if (!isNativeModuleAvailable()) {
+      console.log('Native module not available');
       return false;
     }
     try {
@@ -46,7 +59,8 @@ const CallBlocker = {
    * This will open Android's system dialog
    */
   requestCallScreeningRole: async (): Promise<boolean> => {
-    if (Platform.OS !== 'android') {
+    if (!isNativeModuleAvailable()) {
+      console.log('Native module not available for requestCallScreeningRole');
       return false;
     }
     try {
