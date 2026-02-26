@@ -172,9 +172,11 @@ export default function SettingsScreen() {
 
     try {
       setCheckingCallBlocker(true);
+      console.log('Requesting call screening role...');
       
       // Request the call screening role
       const requested = await CallBlocker.requestCallScreeningRole();
+      console.log('Call screening role request result:', requested);
       
       if (requested) {
         // Wait a moment and check the status
@@ -203,11 +205,15 @@ export default function SettingsScreen() {
           }
         }, 2000);
       } else {
-        // Request failed or not supported
+        // Request failed - could be user denied or role not available
         setCheckingCallBlocker(false);
         Alert.alert(
-          'Non disponible',
-          'Cette fonctionnalité nécessite Android 10 ou supérieur.'
+          'Configuration annulée',
+          'Vous avez annulé la configuration ou la fonctionnalité n\'est pas disponible sur votre appareil.\n\nVérifiez que vous avez bien sélectionné StopPubbySi dans la popup Android.',
+          [
+            { text: 'Réessayer', onPress: () => activateCallBlocking() },
+            { text: 'Annuler', style: 'cancel' }
+          ]
         );
       }
     } catch (error) {
