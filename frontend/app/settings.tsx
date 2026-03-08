@@ -163,92 +163,50 @@ export default function SettingsScreen() {
 
   const activateCallBlocking = async () => {
     if (Platform.OS !== 'android') {
-      Alert.alert(
-        'Non supporté',
-        'Le blocage d\'appels en arrière-plan n\'est disponible que sur Android.'
-      );
-      return;
-    }
-
-    // Check if native module is available
-    if (!CallBlocker.isNativeModuleAvailable()) {
-      Alert.alert(
-        'APK requis',
-        'Cette fonctionnalité nécessite l\'APK compilé. Elle ne fonctionne pas avec Expo Go.\n\nReconstruisez l\'APK avec:\neas build --platform android --profile preview --clear-cache',
-        [{ text: 'Compris' }]
-      );
+      Alert.alert('Non supporté', 'Disponible uniquement sur Android.');
       return;
     }
 
     try {
       setCheckingCallBlocker(true);
-      console.log('Requesting call screening role...');
       
-      // Request the call screening role
-      const requested = await CallBlocker.requestCallScreeningRole();
-      console.log('Call screening role request result:', requested);
+      // Appel direct au module natif
+      const { CallBlockerModule } = require('react-native').NativeModules;
       
-      if (requested) {
-        // Wait a moment and check the status
+      if (!CallBlockerModule) {
+        Alert.alert(
+          'Module non chargé',
+          'Le module natif n\'est pas disponible. Assurez-vous d\'utiliser l\'APK compilé (pas Expo Go).'
+        );
+        setCheckingCallBlocker(false);
+        return;
+      }
+
+      // Demander le rôle de filtrage d'appels
+      const result = await CallBlockerModule.requestCallScreeningRole();
+      
+      if (result) {
         setTimeout(async () => {
-          try {
-            const isEnabled = await CallBlocker.isCallScreeningServiceEnabled();
-            setCallBlockingEnabled(isEnabled);
-            
-            if (isEnabled) {
-              // Sync spam numbers to native storage
-              await syncSpamNumbersToNative();
-              Alert.alert(
-                'Activé !',
-                'StopPubbySi est maintenant configuré pour bloquer les appels spam même quand l\'application est fermée.'
-              );
-            } else {
-              Alert.alert(
-                'Configuration requise',
-                'Veuillez sélectionner StopPubbySi comme application de filtrage d\'appels dans les paramètres Android.'
-              );
-            }
-          } catch (e) {
-            console.error('Error checking status:', e);
-          } finally {
-            setCheckingCallBlocker(false);
+          const isEnabled = await CallBlockerModule.isCallScreeningServiceEnabled();
+          setCallBlockingEnabled(isEnabled);
+          setCheckingCallBlocker(false);
+          
+          if (isEnabled) {
+            await syncSpamNumbersToNative();
+            Alert.alert('Activé !', 'Le blocage d\'appels est maintenant actif.');
           }
         }, 2000);
       } else {
-        // Request failed - could be user denied or role not available
         setCheckingCallBlocker(false);
         Alert.alert(
-          'Configuration annulée',
-          'Vous avez annulé la configuration ou la fonctionnalité n\'est pas disponible sur votre appareil.\n\nVérifiez que vous avez bien sélectionné StopPubbySi dans la popup Android.',
-          [
-            { text: 'Réessayer', onPress: () => activateCallBlocking() },
-            { text: 'Annuler', style: 'cancel' }
-          ]
+          'Configuration requise',
+          'Veuillez sélectionner StopPubbySi dans la popup Android.'
         );
       }
     } catch (error: any) {
-      console.error('Error activating call blocking:', error);
+      console.error('Erreur:', error);
       setCheckingCallBlocker(false);
-      
-      // Check if native module exists
-      const moduleAvailable = CallBlocker.isNativeModuleAvailable();
-      
-      if (!moduleAvailable) {
-        Alert.alert(
-          'Module natif non disponible',
-          'Le module de blocage d\'appels n\'est pas chargé. Cela peut arriver si:\n\n' +
-          '1. Vous utilisez Expo Go (utilisez l\'APK)\n' +
-          '2. L\'APK n\'a pas été reconstruit avec les fichiers natifs\n\n' +
-          'Reconstruisez l\'APK avec:\nnpx expo prebuild --clean\neas build --platform android --profile preview',
-          [{ text: 'Compris' }]
-        );
-      } else {
-        Alert.alert(
-          'Erreur',
-          `Impossible d'activer le blocage: ${error?.message || 'Erreur inconnue'}\n\nVérifiez que vous utilisez Android 10+.`,
-          [{ text: 'OK' }]
-        );
-      }
+      Alert.alert('Erreur', `${error?.message || 'Erreur inconnue'}`);
     }
   };
 
