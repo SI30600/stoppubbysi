@@ -226,10 +226,29 @@ export default function SettingsScreen() {
           ]
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error activating call blocking:', error);
       setCheckingCallBlocker(false);
-      Alert.alert('Erreur', 'Impossible d\'activer le blocage d\'appels. Vérifiez que vous utilisez Android 10 ou supérieur.');
+      
+      // Check if native module exists
+      const moduleAvailable = CallBlocker.isNativeModuleAvailable();
+      
+      if (!moduleAvailable) {
+        Alert.alert(
+          'Module natif non disponible',
+          'Le module de blocage d\'appels n\'est pas chargé. Cela peut arriver si:\n\n' +
+          '1. Vous utilisez Expo Go (utilisez l\'APK)\n' +
+          '2. L\'APK n\'a pas été reconstruit avec les fichiers natifs\n\n' +
+          'Reconstruisez l\'APK avec:\nnpx expo prebuild --clean\neas build --platform android --profile preview',
+          [{ text: 'Compris' }]
+        );
+      } else {
+        Alert.alert(
+          'Erreur',
+          `Impossible d'activer le blocage: ${error?.message || 'Erreur inconnue'}\n\nVérifiez que vous utilisez Android 10+.`,
+          [{ text: 'OK' }]
+        );
+      }
     }
   };
 
